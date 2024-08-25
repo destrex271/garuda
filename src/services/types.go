@@ -5,13 +5,26 @@ type Model struct{
     fields string
 }
 
+type Application struct{
+    id int
+    name string
+}
+
+type Inventory struct{
+    id int
+    name string
+    path string
+}
+
 type API struct{
     id int
     name string
-    description string
     path string
+    reqType string
+    description string
     parameters string
     createdDate uint64
+    inventory int
 }
 
 type Response struct{
