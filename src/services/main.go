@@ -18,7 +18,7 @@ import (
 
 var target string
 
-func PopulateModels(data map[string]interface{}, conn *pgx.Conn) error{
+func PopulateModels(data map[string]interface{}, conn *pgx.Conn, app_id int) error{
     for key, model := range data{
         f_data, err := json.Marshal(model)
         mdl := &Model{
@@ -29,9 +29,10 @@ func PopulateModels(data map[string]interface{}, conn *pgx.Conn) error{
         args := pgx.NamedArgs{
             "name":    mdl.name,
             "fields":   mdl.fields,
+            "app_id": app_id,
         }
 
-        _, err = conn.Exec(context.Background(), "insert into Model(name, fields) values(@name, @fields)", args)
+        _, err = conn.Exec(context.Background(), "insert into Model(name, fields, app_id) values(@name, @fields, @app_id)", args)
        
         if err != nil{
             log.Println("Failing")
@@ -42,7 +43,7 @@ func PopulateModels(data map[string]interface{}, conn *pgx.Conn) error{
     return nil
 }
 
-func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn) error{
+func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, app_id int) error{
     for path, api_methods := range data{
 
         api_methods, isOk := api_methods.(map[string]interface{})
@@ -54,8 +55,9 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn) error{
         // Add to inventory
         args := pgx.NamedArgs{
             "name": path,
+            "app_id": app_id,
         }
-        _, err := conn.Exec(context.Background(), "insert into Inventory(name, path) values(@name, @name)", args)
+        _, err := conn.Exec(context.Background(), "insert into Inventory(name, path, app_id) values(@name, @name, @app_id)", args)
 
         if err != nil{
             log.Println("inserting in inven")
@@ -63,7 +65,7 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn) error{
         }
         
         var inv_id int
-        err = conn.QueryRow(context.Background(), "select id from Inventory where name=$1", path).Scan(&inv_id)
+        err = conn.QueryRow(context.Background(), "select id from Inventory where name=$1 AND app_id=$2", path, app_id).Scan(&inv_id)
         if err != nil{
             log.Println("selecting from inven")
             return err
@@ -121,11 +123,14 @@ func main() {
 		os.Exit(1)
 	}
 	defer conn.Close(context.Background())
+
     
 	port := flag.String("port", "5000", "Port of application")
 	flag.Parse()
 
     resp, err := http.Get(fmt.Sprintf("http://0.0.0.0:%s/swagger.json", *port))
+
+    // create new application
 
     if err != nil{
         log.Fatal(err)
@@ -141,12 +146,36 @@ func main() {
 
     json.Unmarshal(body, &data)
 
-    err = PopulateModels(data["definitions"].(map[string]interface{}), conn)
+    info, isOk := data["info"].(map[string]interface{})
+    if !isOk{
+        log.Fatal("Unable to get info")
+    }
+
+    log.Println(info["title"])
+
+    var app_id int
+    err = conn.QueryRow(context.Background(), "select id from Application where name=$1", info["title"]).Scan(&app_id)
+
+    if app_id == 0{
+        args := &pgx.NamedArgs{
+            "name": info["title"],
+        }
+        _, err = conn.Exec(context.Background(), "insert into application(name) values(@name)", args)
+        if err != nil{
+            log.Fatal("unable to create application", err)
+        }
+
+        conn.QueryRow(context.Background(), "select id from Application where name=$1", info["title"]).Scan(&app_id)
+    }
+
+    log.Println(app_id)
+
+    err = PopulateModels(data["definitions"].(map[string]interface{}), conn, app_id)
     if err != nil{
         log.Fatal(err)
     }
 
-    err = PopulateAPIAndResponse(data["paths"].(map[string]interface{}), conn)
+    err = PopulateAPIAndResponse(data["paths"].(map[string]interface{}), conn, app_id)
     if err != nil{
         log.Fatal(err)
     }
