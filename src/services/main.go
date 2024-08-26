@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "encoding/json"
 	"context"
 	"encoding/json"
 	"errors"
@@ -20,189 +19,226 @@ var target string
 
 type Registry map[int]interface{}
 
-var endpointRegistry Registry
+var endpointRegistry = make(Registry)
+var modelsRegistry = make(Registry)
 
-func PopulateModels(data map[string]interface{}, conn *pgx.Conn, app_id int) error {
+func PopulateModels(data map[string]interface{}, conn *pgx.Conn, appID int) error {
+	models, isOk := modelsRegistry[appID].(map[string]bool)
+	if !isOk {
+		return errors.New("unable to extract existing models")
+	}
+
 	for key, model := range data {
-		f_data, err := json.Marshal(model)
+		fData, err := json.Marshal(model)
+		if err != nil {
+			return err
+		}
 		mdl := &Model{
 			name:   key,
-			fields: string(f_data),
+			fields: string(fData),
 		}
 
 		args := pgx.NamedArgs{
 			"name":   mdl.name,
 			"fields": mdl.fields,
-			"app_id": app_id,
+			"app_id": appID,
 		}
 
-		_, err = conn.Exec(context.Background(), "insert into Model(name, fields, app_id) values(@name, @fields, @app_id)", args)
-
+		_, err = conn.Exec(context.Background(), "INSERT INTO Model(name, fields, app_id) VALUES(@name, @fields, @app_id)", args)
 		if err != nil {
-			log.Println("Failing", err)
+			log.Println("Error inserting model:", err)
+			// Let's check if any updates are requried to the fields or not
+			// var prev_fields string
+			// err = conn.QueryRow(context.Background(), "Select fields from Model where name=$1 AND app_id=$2", mdl.name, appID).Scan(&prev_fields)
+			// log.Println(prev_fields, "--", mdl.fields)
+			// if prev_fields == mdl.fields && len(prev_fields) == len(mdl.fields) {
+			// 	log.Println("No updates required for model ", mdl.name)
+			// 	return nil
+			// }
+			// TODO: Data comming from DB is not formatted as the data fromatted by json.Marshall
+			// Let's run an update query
+			_, err = conn.Exec(context.Background(), "UPDATE Model set fields=@fields where app_id=@app_id AND name=@name", args)
+			if err != nil {
+				log.Println("Error updating model table")
+				return err
+			}
 		}
+
+		delete(models, mdl.name)
 	}
 
+	modelsRegistry[appID] = models
 	return nil
 }
 
-func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, app_id int) error {
-	for path, api_methods := range data {
-
-		api_methods, isOk := api_methods.(map[string]interface{})
-
+func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID int) error {
+	for path, apiMethods := range data {
+		apiMethods, isOk := apiMethods.(map[string]interface{})
 		if !isOk {
-			return errors.New("Unable to parse API details")
+			return errors.New("unable to parse API details")
 		}
 
 		// Add to inventory
 		args := pgx.NamedArgs{
 			"name":   path,
-			"app_id": app_id,
+			"app_id": appID,
 		}
-		_, err := conn.Exec(context.Background(), "insert into Inventory(name, path, app_id) values(@name, @name, @app_id)", args)
-
+		_, err := conn.Exec(context.Background(), "INSERT INTO Inventory(name, path, app_id) VALUES(@name, @name, @app_id)", args)
 		if err != nil {
-			log.Println("inserting in inven", err)
+			log.Println("Error inserting into inventory:", err)
 		}
 
-		var inv_id int
-		err = conn.QueryRow(context.Background(), "select id from Inventory where name=$1 AND app_id=$2", path, app_id).Scan(&inv_id)
+		var invID int
+		err = conn.QueryRow(context.Background(), "SELECT id FROM Inventory WHERE name=$1 AND app_id=$2", path, appID).Scan(&invID)
 		if err != nil {
-			log.Println("selecting from inven", err)
+			log.Println("Error selecting from inventory:", err)
 		}
 
-		// Add all api methods
-
-		for req_type, dt := range api_methods {
-
+		// Add all API methods
+		for reqType, dt := range apiMethods {
 			dt, isOk := dt.(map[string]interface{})
-
 			if !isOk {
-				return errors.New("Unable to parse data")
+				return errors.New("unable to parse data")
 			}
 
-			parm_string, err := json.Marshal(dt["parameters"])
-
+			parmString, err := json.Marshal(dt["parameters"])
 			if err != nil {
 				return err
 			}
 
 			responses, err := json.Marshal(dt["responses"])
+			if err != nil {
+				return err
+			}
 
 			tm := time.Now().Unix()
-			log.Println(tm)
-
-			args := pgx.NamedArgs{
+			args = pgx.NamedArgs{
 				"name":      path,
 				"path":      path,
-				"req_type":  req_type,
+				"req_type":  reqType,
 				"desc":      dt["description"],
 				"time":      tm,
-				"params":    parm_string,
-				"id":        inv_id,
+				"params":    parmString,
+				"id":        invID,
 				"responses": responses,
 			}
 
-			// Compare previous API params, response and description
+			// Check if API already exists or not
+			var id int
+			err = conn.QueryRow(context.Background(),
+				"SELECT id FROM api WHERE name=$1 AND inventory=$2 AND req_type=$3", path, invID, reqType).Scan(&id)
 
-			_, err = conn.Exec(context.Background(),
-				"insert into api(name, description, path, parameters, created_time, inventory, req_type, responses) values (@name, @desc, @path, @params, @time, @id, @req_type, @responses)", args)
-
-			if err != nil {
-				log.Println("inserting api", err)
-
-				var params string
-				var response string
+			if id == 0 {
+				_, err = conn.Exec(context.Background(),
+					"INSERT INTO api(name, description, path, parameters, created_time, inventory, req_type, responses) VALUES (@name, @desc, @path, @params, @time, @id, @req_type, @responses)", args)
+			} else {
+				log.Println("Updating endpoint")
+				// Update endpoint
+				var params, response, description string
 				var id int
-				var description string
-
 				err = conn.QueryRow(context.Background(),
-					"select id, responses, parameters, description from api where name=$1 and inventory=$2", path, inv_id).Scan(&id, &response, &params, &description)
-
+					"SELECT id, responses, parameters, description FROM api WHERE name=$1 AND inventory=$2", path, invID).Scan(&id, &response, &params, &description)
 				if err != nil {
-					return err
+					log.Println("selecting previous", err)
 				}
 
-				if params != string(parm_string) && description != dt["description"] && response != string(responses) {
-
+				if params != string(parmString) || description != dt["description"] || response != string(responses) {
 					tm := time.Now().Unix()
-					// update API
 					args = pgx.NamedArgs{
 						"name":      path,
 						"path":      path,
-						"req_type":  req_type,
+						"req_type":  reqType,
 						"desc":      dt["description"],
 						"time":      tm,
-						"params":    parm_string,
-						"id":        inv_id,
+						"params":    parmString,
+						"id":        invID,
 						"responses": responses,
 						"oid":       id,
 					}
 
 					_, err = conn.Exec(context.Background(),
-						"update table api set description=@desc, time=@tm, responses=@responses, parameters=@params where inventory=@id and id=@oid", args)
-
+						"UPDATE api SET description=@desc, created_time=@time, responses=@responses, parameters=@params WHERE inventory=@id AND id=@oid", args)
 					if err != nil {
-						log.Println("Update API error ", err)
+						log.Println("Error updating API:", err)
 						return err
 					}
 
-					log.Println("Successfully updated!")
+					log.Println("Successfully updated API!")
 				}
 			}
-
 		}
-		endpoints := endpointRegistry[app_id].(map[string]bool)
-		delete(endpoints, path)
-		endpointRegistry[app_id] = endpoints
+
+		if endpoints, ok := endpointRegistry[appID].(map[string]bool); ok {
+			delete(endpoints, path)
+			endpointRegistry[appID] = endpoints
+		}
 	}
 
 	return nil
 }
 
-func PopulateRegistry(conn *pgx.Conn, app_id int) error {
+func PopulateRegistry(conn *pgx.Conn, appID int) error {
 	endpoints := make(map[string]bool)
-	var inventoryIds []uint64
+	var inventoryIDs []int
 
-	rows, err := conn.Query(context.Background(), "select id from inventory where app_id=$1", app_id)
+	rows, err := conn.Query(context.Background(), "SELECT id FROM Inventory WHERE app_id=$1", appID)
+	if err != nil {
+		return err
+	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var id uint64
+		var id int
 		err = rows.Scan(&id)
-		log.Println(id)
 		if err != nil {
-			log.Println("Failing here -> ", err)
+			log.Println("Error scanning inventory ID:", err)
 			return err
 		}
-		inventoryIds = append(inventoryIds, id)
+		inventoryIDs = append(inventoryIDs, id)
 	}
 
-	if err != nil {
-		log.Println("Error", err)
-		return err
-	}
-
-	for _, id := range inventoryIds {
-		var data string
-		err = conn.QueryRow(context.Background(), "select path from api where inventory=$1", id).Scan(&data)
-		log.Println(data)
+	for _, id := range inventoryIDs {
+		var path string
+		err = conn.QueryRow(context.Background(), "SELECT path FROM API WHERE inventory=$1", id).Scan(&path)
 		if err != nil {
-			log.Println("While getting api")
+			log.Println("Error getting API path:", err)
 			return err
 		}
-		endpoints[data] = false
+		endpoints[path] = false
 	}
 
-	endpointRegistry[app_id] = endpoints
+	endpointRegistry[appID] = endpoints
 	log.Println(endpointRegistry)
 
 	return nil
 }
 
+func PopulateModelRegistry(conn *pgx.Conn, appID int) error {
+	models := make(map[string]bool)
+
+	rows, err := conn.Query(context.Background(), "SELECT name FROM Model WHERE app_id=$1", appID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var name string
+		err = rows.Scan(&name)
+		if err != nil {
+			log.Println("Error scanning model name:", err)
+			return err
+		}
+		models[name] = false
+	}
+
+	modelsRegistry[appID] = models
+	log.Println(modelsRegistry)
+
+	return nil
+}
+
 func DeleteNonExistentEndpoints(conn *pgx.Conn, appID int) error {
-	// Extract endpoints from the registry
 	endpoints, ok := endpointRegistry[appID].(map[string]bool)
 	if !ok {
 		log.Println("Error: Unable to extract endpoints from registry")
@@ -210,30 +246,44 @@ func DeleteNonExistentEndpoints(conn *pgx.Conn, appID int) error {
 	}
 	log.Println("Endpoints to delete:", endpoints)
 
-	// Prepare the SQL statement with a positional parameter
 	const query = "DELETE FROM Inventory WHERE name=$1"
 
-	// Iterate over endpoints and delete each one
 	for key := range endpoints {
 		log.Println("Deleting ->", key)
 
-		// Execute the delete query
-		result, err := conn.Exec(context.Background(), query, key)
+		_, err := conn.Exec(context.Background(), query, key)
 		if err != nil {
 			log.Println("Error executing delete:", err)
 			return err
 		}
-
-		// Log the result of the delete operation
-		log.Println("Delete result:", result)
 	}
 
 	return nil
 }
+
+func DeleteNonExistentModels(conn *pgx.Conn, appID int) error {
+	models, ok := modelsRegistry[appID].(map[string]bool)
+	if !ok {
+		log.Println("Error: Unable to extract models from registry")
+		return errors.New("unable to extract models")
+	}
+	log.Println("Models to delete:", models)
+
+	const query = "DELETE FROM Model WHERE name=$1"
+
+	for key := range models {
+		log.Println("Deleting ->", key)
+
+		_, err := conn.Exec(context.Background(), query, key)
+		if err != nil {
+			log.Println("Error executing delete:", err)
+			return err
+		}
+	}
+	return nil
+}
+
 func main() {
-
-	endpointRegistry = make(Registry)
-
 	conn, err := pgx.Connect(context.Background(), "postgres://postgres:postgres@localhost:5432/api_inventory")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
@@ -245,63 +295,85 @@ func main() {
 	flag.Parse()
 
 	resp, err := http.Get(fmt.Sprintf("http://0.0.0.0:%s/swagger.json", *port))
-	// create new application
-
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error fetching swagger.json:", err)
 	}
-
 	defer resp.Body.Close()
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal("JSON", err)
+		log.Fatal("Error reading response body:", err)
 	}
 
 	var data map[string]interface{}
-
-	json.Unmarshal(body, &data)
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		log.Fatal("Error unmarshalling JSON:", err)
+	}
 
 	info, isOk := data["info"].(map[string]interface{})
 	if !isOk {
-		log.Fatal("Unable to get info")
+		log.Fatal("Unable to get info from swagger JSON")
 	}
 
-	log.Println(info["title"])
+	log.Println("Application title:", info["title"])
 
-	var app_id int
-	err = conn.QueryRow(context.Background(), "select id from Application where name=$1", info["title"]).Scan(&app_id)
-	newEndpoint := false
-
-	if app_id == 0 {
-		args := &pgx.NamedArgs{
-			"name": info["title"],
-		}
-		_, err = conn.Exec(context.Background(), "insert into application(name) values(@name)", args)
-		if err != nil {
-			log.Fatal("unable to create application", err)
-		}
-
-		conn.QueryRow(context.Background(), "select id from Application where name=$1", info["title"]).Scan(&app_id)
-		newEndpoint = true
-		log.Println("New endpoint")
-	}
-
-	if !newEndpoint {
-		log.Println("Populating..")
-		PopulateRegistry(conn, app_id)
-	}
-
-	err = PopulateModels(data["definitions"].(map[string]interface{}), conn, app_id)
+	var appID int
+	err = conn.QueryRow(context.Background(), "SELECT id FROM Application WHERE name=$1", info["title"]).Scan(&appID)
 	if err != nil {
-		log.Fatal(err)
+		if err == pgx.ErrNoRows {
+			args := pgx.NamedArgs{
+				"name": info["title"],
+			}
+			_, err = conn.Exec(context.Background(), "INSERT INTO Application(name) VALUES(@name)", args)
+			if err != nil {
+				log.Fatal("Unable to create application:", err)
+			}
+
+			err = conn.QueryRow(context.Background(), "SELECT id FROM Application WHERE name=$1", info["title"]).Scan(&appID)
+			if err != nil {
+				log.Fatal("Error retrieving new application ID:", err)
+			}
+
+			log.Println("New application created")
+		} else {
+			log.Fatal("Error querying application:", err)
+		}
+	} else {
+		log.Println("Application already exists")
 	}
 
-	err = PopulateAPIAndResponse(data["paths"].(map[string]interface{}), conn, app_id)
+	log.Println("Populating registries...")
+	err = PopulateRegistry(conn, appID)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error populating registry:", err)
 	}
 
-	err = DeleteNonExistentEndpoints(conn, app_id)
+	err = PopulateModelRegistry(conn, appID)
+	if err != nil {
+		log.Fatal("Error populating model registry:", err)
+	}
 
-	log.Println(endpointRegistry)
+	err = PopulateModels(data["definitions"].(map[string]interface{}), conn, appID)
+	if err != nil {
+		log.Fatal("Error populating models:", err)
+	}
+
+	err = PopulateAPIAndResponse(data["paths"].(map[string]interface{}), conn, appID)
+	if err != nil {
+		log.Println("Error populating API and response:", err)
+	}
+
+	err = DeleteNonExistentEndpoints(conn, appID)
+	if err != nil {
+		log.Println("Error deleting non-existent endpoints:", err)
+	}
+
+	err = DeleteNonExistentModels(conn, appID)
+	if err != nil {
+		log.Fatal("Error deleting non-existent models:", err)
+	}
+
+	log.Println("Final endpoint registry:", endpointRegistry)
+	log.Println("Final models registry:", modelsRegistry)
 }
