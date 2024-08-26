@@ -154,8 +154,7 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, app_id 
 
 		}
 		endpoints := endpointRegistry[app_id].(map[string]bool)
-		endpoints[path] = true
-		log.Println(endpoints)
+		delete(endpoints, path)
 		endpointRegistry[app_id] = endpoints
 	}
 
@@ -202,6 +201,35 @@ func PopulateRegistry(conn *pgx.Conn, app_id int) error {
 	return nil
 }
 
+func DeleteNonExistentEndpoints(conn *pgx.Conn, appID int) error {
+	// Extract endpoints from the registry
+	endpoints, ok := endpointRegistry[appID].(map[string]bool)
+	if !ok {
+		log.Println("Error: Unable to extract endpoints from registry")
+		return errors.New("unable to extract endpoints")
+	}
+	log.Println("Endpoints to delete:", endpoints)
+
+	// Prepare the SQL statement with a positional parameter
+	const query = "DELETE FROM Inventory WHERE name=$1"
+
+	// Iterate over endpoints and delete each one
+	for key := range endpoints {
+		log.Println("Deleting ->", key)
+
+		// Execute the delete query
+		result, err := conn.Exec(context.Background(), query, key)
+		if err != nil {
+			log.Println("Error executing delete:", err)
+			return err
+		}
+
+		// Log the result of the delete operation
+		log.Println("Delete result:", result)
+	}
+
+	return nil
+}
 func main() {
 
 	endpointRegistry = make(Registry)
@@ -272,6 +300,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = DeleteNonExistentEndpoints(conn, app_id)
 
 	log.Println(endpointRegistry)
 }
