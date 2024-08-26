@@ -112,15 +112,29 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 			}
 
 			tm := time.Now().Unix()
+
+			opid := dt["operationid"]
+			prod := dt["produces"]
+
+			if prod != nil {
+				prod, err = json.Marshal(prod)
+				if err != nil {
+					log.Println("Unable to marshal ", err)
+					return err
+				}
+			}
+
 			args = pgx.NamedArgs{
-				"name":      path,
-				"path":      path,
-				"req_type":  reqType,
-				"desc":      dt["description"],
-				"time":      tm,
-				"params":    parmString,
-				"id":        invID,
-				"responses": responses,
+				"name":        path,
+				"path":        path,
+				"req_type":    reqType,
+				"desc":        dt["description"],
+				"time":        tm,
+				"params":      parmString,
+				"id":          invID,
+				"responses":   responses,
+				"operationid": opid,
+				"produces":    prod,
 			}
 
 			// Check if API already exists or not
@@ -130,7 +144,7 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 
 			if id == 0 {
 				_, err = conn.Exec(context.Background(),
-					"INSERT INTO api(name, description, path, parameters, created_time, inventory, req_type, responses) VALUES (@name, @desc, @path, @params, @time, @id, @req_type, @responses)", args)
+					"INSERT INTO api(name, description, path, parameters, created_time, inventory, req_type, responses, operationid, produces) VALUES (@name, @desc, @path, @params, @time, @id, @req_type, @responses, @operationid, @produces)", args)
 			} else {
 				log.Println("Updating endpoint")
 				// Update endpoint
