@@ -306,9 +306,10 @@ func main() {
 	defer conn.Close(context.Background())
 
 	port := flag.String("port", "5000", "Port of application")
+	json_file_url := flag.String("apiDocs", fmt.Sprintf("http://0.0.0.0:%s/swagger.json", *port), "URL for OpenAPI specification json.")
 	flag.Parse()
 
-	resp, err := http.Get(fmt.Sprintf("http://0.0.0.0:%s/swagger.json", *port))
+	resp, err := http.Get(*json_file_url)
 	if err != nil {
 		log.Fatal("Error fetching swagger.json:", err)
 	}
