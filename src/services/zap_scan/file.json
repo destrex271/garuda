@@ -1,0 +1,1146 @@
+{
+	"@generated": "Wed, 28 Aug 2024 16:53:55",
+	"@programName": "ZAP",
+	"@version": "2.15.0",
+	"site": [
+		{
+			"@host": "localhost",
+			"@name": "http://localhost:5000",
+			"@port": "5000",
+			"@ssl": "false",
+			"alerts": [
+				{
+					"alert": "Content Security Policy (CSP) Header Not Set",
+					"alertRef": "10038-1",
+					"confidence": "3",
+					"count": "3",
+					"cweid": "693",
+					"desc": "\u003cp\u003eContent Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page — covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/apidocs/"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/robots.txt"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/sitemap.xml"
+						}
+					],
+					"name": "Content Security Policy (CSP) Header Not Set",
+					"otherinfo": "",
+					"pluginid": "10038",
+					"reference": "\u003cp\u003ehttps://developer.mozilla.org/en-US/docs/Web/Security/CSP/Introducing_Content_Security_Policy\u003c/p\u003e\u003cp\u003ehttps://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html\u003c/p\u003e\u003cp\u003ehttps://www.w3.org/TR/CSP/\u003c/p\u003e\u003cp\u003ehttps://w3c.github.io/webappsec-csp/\u003c/p\u003e\u003cp\u003ehttps://web.dev/articles/csp\u003c/p\u003e\u003cp\u003ehttps://caniuse.com/#feat=contentsecuritypolicy\u003c/p\u003e\u003cp\u003ehttps://content-security-policy.com/\u003c/p\u003e",
+					"riskcode": "2",
+					"riskdesc": "Medium (High)",
+					"solution": "\u003cp\u003eEnsure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header.\u003c/p\u003e",
+					"sourceid": "15",
+					"wascid": "15"
+				},
+				{
+					"alert": "Missing Anti-clickjacking Header",
+					"alertRef": "10020-1",
+					"confidence": "2",
+					"count": "1",
+					"cweid": "1021",
+					"desc": "\u003cp\u003eThe response does not include either Content-Security-Policy with 'frame-ancestors' directive or X-Frame-Options to protect against 'ClickJacking' attacks.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "x-frame-options",
+							"uri": "http://localhost:5000/apidocs/"
+						}
+					],
+					"name": "Missing Anti-clickjacking Header",
+					"otherinfo": "",
+					"pluginid": "10020",
+					"reference": "\u003cp\u003ehttps://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options\u003c/p\u003e",
+					"riskcode": "2",
+					"riskdesc": "Medium (Medium)",
+					"solution": "\u003cp\u003eModern Web browsers support the Content-Security-Policy and X-Frame-Options HTTP headers. Ensure one of them is set on all web pages returned by your site/app.\u003c/p\u003e\u003cp\u003eIf you expect the page to be framed only by pages on your server (e.g. it's part of a FRAMESET) then you'll want to use SAMEORIGIN, otherwise if you never expect the page to be framed, you should use DENY. Alternatively consider implementing Content Security Policy's \"frame-ancestors\" directive.\u003c/p\u003e",
+					"sourceid": "15",
+					"wascid": "15"
+				},
+				{
+					"alert": "Vulnerable JS Library",
+					"alertRef": "10003",
+					"confidence": "2",
+					"count": "2",
+					"cweid": "829",
+					"desc": "\u003cp\u003eThe identified library jquery, version 2.2.4 is vulnerable.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "/*! jQuery v2.2.4",
+							"method": "GET",
+							"otherinfo": "CVE-2020-11023\nCVE-2020-11022\nCVE-2015-9251\nCVE-2019-11358\n",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/lib/jquery.min.js"
+						},
+						{
+							"attack": "",
+							"evidence": "var r=\"dompurify\"+(n?\"#\"+n:\"\");try{return e.createPolicy(r,{createHTML:function(e){return e}})}catch(e){return console.warn(\"TrustedTypes policy \"+r+\" could not be created.\"),null}};return function e(){var a=arguments.length\u003e0\u0026\u0026void 0!==arguments[0]?arguments[0]:j(),f=function(t){return e(t)};if(f.version=\"2.0.7\"",
+							"method": "GET",
+							"otherinfo": "CVE-2020-26870\n",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						}
+					],
+					"name": "Vulnerable JS Library",
+					"otherinfo": "\u003cp\u003eCVE-2020-11023\u003c/p\u003e\u003cp\u003eCVE-2020-11022\u003c/p\u003e\u003cp\u003eCVE-2015-9251\u003c/p\u003e\u003cp\u003eCVE-2019-11358\u003c/p\u003e\u003cp\u003e\u003c/p\u003e",
+					"pluginid": "10003",
+					"reference": "\u003cp\u003ehttps://github.com/jquery/jquery/issues/2432\u003c/p\u003e\u003cp\u003ehttp://blog.jquery.com/2016/01/08/jquery-2-2-and-1-12-released/\u003c/p\u003e\u003cp\u003ehttp://research.insecurelabs.org/jquery/test/\u003c/p\u003e\u003cp\u003ehttps://blog.jquery.com/2019/04/10/jquery-3-4-0-released/\u003c/p\u003e\u003cp\u003ehttps://nvd.nist.gov/vuln/detail/CVE-2019-11358\u003c/p\u003e\u003cp\u003ehttps://github.com/advisories/GHSA-rmxg-73gg-4p98\u003c/p\u003e\u003cp\u003ehttps://nvd.nist.gov/vuln/detail/CVE-2015-9251\u003c/p\u003e\u003cp\u003ehttps://github.com/jquery/jquery/commit/753d591aea698e57d6db58c9f722cd0808619b1b\u003c/p\u003e\u003cp\u003ehttps://github.com/jquery/jquery.com/issues/162\u003c/p\u003e\u003cp\u003ehttps://bugs.jquery.com/ticket/11974\u003c/p\u003e\u003cp\u003ehttps://blog.jquery.com/2020/04/10/jquery-3-5-0-released/\u003c/p\u003e\u003cp\u003e\u003c/p\u003e",
+					"riskcode": "2",
+					"riskdesc": "Medium (Medium)",
+					"solution": "\u003cp\u003ePlease upgrade to the latest version of jquery.\u003c/p\u003e",
+					"sourceid": "25",
+					"wascid": "-1"
+				},
+				{
+					"alert": "Private IP Disclosure",
+					"alertRef": "2",
+					"confidence": "2",
+					"count": "1",
+					"cweid": "200",
+					"desc": "\u003cp\u003eA private IP (such as 10.x.x.x, 172.x.x.x, 192.168.x.x) or an Amazon EC2 private hostname (for example, ip-10-0-56-78) has been found in the HTTP response body. This information might be helpful for further attacks targeting internal systems.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "ip-172-31-21-173",
+							"method": "GET",
+							"otherinfo": "ip-172-31-21-173\n",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						}
+					],
+					"name": "Private IP Disclosure",
+					"otherinfo": "\u003cp\u003eip-172-31-21-173\u003c/p\u003e\u003cp\u003e\u003c/p\u003e",
+					"pluginid": "2",
+					"reference": "\u003cp\u003ehttps://tools.ietf.org/html/rfc1918\u003c/p\u003e",
+					"riskcode": "1",
+					"riskdesc": "Low (Medium)",
+					"solution": "\u003cp\u003eRemove the private IP address from the HTTP response body. For comments, use JSP/ASP/PHP comment instead of HTML/JavaScript comment which can be seen by client browsers.\u003c/p\u003e",
+					"sourceid": "28",
+					"wascid": "13"
+				},
+				{
+					"alert": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+					"alertRef": "10036",
+					"confidence": "3",
+					"count": "9",
+					"cweid": "200",
+					"desc": "\u003cp\u003eThe web/application server is leaking version information via the \"Server\" HTTP response header. Access to such information may facilitate attackers identifying other vulnerabilities your web/application server is subject to.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/apidocs/"
+						},
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/favicon-32x32.png"
+						},
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/lib/jquery.min.js"
+						},
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui.css"
+						},
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/robots.txt"
+						},
+						{
+							"attack": "",
+							"evidence": "Werkzeug/3.0.4 Python/3.12.4",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:5000/sitemap.xml"
+						}
+					],
+					"name": "Server Leaks Version Information via \"Server\" HTTP Response Header Field",
+					"otherinfo": "",
+					"pluginid": "10036",
+					"reference": "\u003cp\u003ehttps://httpd.apache.org/docs/current/mod/core.html#servertokens\u003c/p\u003e\u003cp\u003ehttps://learn.microsoft.com/en-us/previous-versions/msp-n-p/ff648552(v=pandp.10)\u003c/p\u003e\u003cp\u003ehttps://www.troyhunt.com/shhh-dont-let-your-response-headers/\u003c/p\u003e",
+					"riskcode": "1",
+					"riskdesc": "Low (High)",
+					"solution": "\u003cp\u003eEnsure that your web server, application server, load balancer, etc. is configured to suppress the \"Server\" header or provide generic details.\u003c/p\u003e",
+					"sourceid": "11",
+					"wascid": "13"
+				},
+				{
+					"alert": "Timestamp Disclosure - Unix",
+					"alertRef": "10096",
+					"confidence": "1",
+					"count": "74",
+					"cweid": "200",
+					"desc": "\u003cp\u003eA timestamp was disclosed by the application/web server. - Unix\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "1426881987",
+							"method": "GET",
+							"otherinfo": "1426881987, which evaluates to: 2015-03-21 01:36:27.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1431655765",
+							"method": "GET",
+							"otherinfo": "1431655765, which evaluates to: 2015-05-15 07:39:25.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1432725776",
+							"method": "GET",
+							"otherinfo": "1432725776, which evaluates to: 2015-05-27 16:52:56.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1467031594",
+							"method": "GET",
+							"otherinfo": "1467031594, which evaluates to: 2016-06-27 18:16:34.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1495990901",
+							"method": "GET",
+							"otherinfo": "1495990901, which evaluates to: 2017-05-28 22:31:41.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1501505948",
+							"method": "GET",
+							"otherinfo": "1501505948, which evaluates to: 2017-07-31 18:29:08.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1508970993",
+							"method": "GET",
+							"otherinfo": "1508970993, which evaluates to: 2017-10-26 04:06:33.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1518500249",
+							"method": "GET",
+							"otherinfo": "1518500249, which evaluates to: 2018-02-13 11:07:29.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1522805485",
+							"method": "GET",
+							"otherinfo": "1522805485, which evaluates to: 2018-04-04 07:01:25.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1537002063",
+							"method": "GET",
+							"otherinfo": "1537002063, which evaluates to: 2018-09-15 14:31:03.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1541459225",
+							"method": "GET",
+							"otherinfo": "1541459225, which evaluates to: 2018-11-06 04:37:05.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1546045734",
+							"method": "GET",
+							"otherinfo": "1546045734, which evaluates to: 2018-12-29 06:38:54.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1555081692",
+							"method": "GET",
+							"otherinfo": "1555081692, which evaluates to: 2019-04-12 20:38:12.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1575990012",
+							"method": "GET",
+							"otherinfo": "1575990012, which evaluates to: 2019-12-10 20:30:12.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1595750129",
+							"method": "GET",
+							"otherinfo": "1595750129, which evaluates to: 2020-07-26 13:25:29.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1607167915",
+							"method": "GET",
+							"otherinfo": "1607167915, which evaluates to: 2020-12-05 17:01:55.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1654270250",
+							"method": "GET",
+							"otherinfo": "1654270250, which evaluates to: 2022-06-03 21:00:50.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1694076839",
+							"method": "GET",
+							"otherinfo": "1694076839, which evaluates to: 2023-09-07 14:23:59.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1695183700",
+							"method": "GET",
+							"otherinfo": "1695183700, which evaluates to: 2023-09-20 09:51:40.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1731405415",
+							"method": "GET",
+							"otherinfo": "1731405415, which evaluates to: 2024-11-12 15:26:55.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1732584193",
+							"method": "GET",
+							"otherinfo": "1732584193, which evaluates to: 2024-11-26 06:53:13.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1747873779",
+							"method": "GET",
+							"otherinfo": "1747873779, which evaluates to: 2025-05-22 05:59:39.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1750603025",
+							"method": "GET",
+							"otherinfo": "1750603025, which evaluates to: 2025-06-22 20:07:05.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1779033703",
+							"method": "GET",
+							"otherinfo": "1779033703, which evaluates to: 2026-05-17 21:31:43.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1816402316",
+							"method": "GET",
+							"otherinfo": "1816402316, which evaluates to: 2027-07-24 09:41:56.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1856431235",
+							"method": "GET",
+							"otherinfo": "1856431235, which evaluates to: 2028-10-29 16:50:35.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1859775393",
+							"method": "GET",
+							"otherinfo": "1859775393, which evaluates to: 2028-12-07 09:46:33.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1894007588",
+							"method": "GET",
+							"otherinfo": "1894007588, which evaluates to: 2030-01-07 14:43:08.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1899447441",
+							"method": "GET",
+							"otherinfo": "1899447441, which evaluates to: 2030-03-11 13:47:21.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1914138554",
+							"method": "GET",
+							"otherinfo": "1914138554, which evaluates to: 2030-08-28 14:39:14.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1925078388",
+							"method": "GET",
+							"otherinfo": "1925078388, which evaluates to: 2031-01-02 05:29:48.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1955562222",
+							"method": "GET",
+							"otherinfo": "1955562222, which evaluates to: 2031-12-21 01:13:42.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1986661051",
+							"method": "GET",
+							"otherinfo": "1986661051, which evaluates to: 2032-12-14 23:47:31.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1996064986",
+							"method": "GET",
+							"otherinfo": "1996064986, which evaluates to: 2033-04-02 19:59:46.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "2003034995",
+							"method": "GET",
+							"otherinfo": "2003034995, which evaluates to: 2033-06-22 12:06:35.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "2007800933",
+							"method": "GET",
+							"otherinfo": "2007800933, which evaluates to: 2033-08-16 15:58:53.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "2024104815",
+							"method": "GET",
+							"otherinfo": "2024104815, which evaluates to: 2034-02-21 08:50:15.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1426881987",
+							"method": "GET",
+							"otherinfo": "1426881987, which evaluates to: 2015-03-21 01:36:27.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1431655765",
+							"method": "GET",
+							"otherinfo": "1431655765, which evaluates to: 2015-05-15 07:39:25.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1432725776",
+							"method": "GET",
+							"otherinfo": "1432725776, which evaluates to: 2015-05-27 16:52:56.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1467031594",
+							"method": "GET",
+							"otherinfo": "1467031594, which evaluates to: 2016-06-27 18:16:34.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1495990901",
+							"method": "GET",
+							"otherinfo": "1495990901, which evaluates to: 2017-05-28 22:31:41.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1501505948",
+							"method": "GET",
+							"otherinfo": "1501505948, which evaluates to: 2017-07-31 18:29:08.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1508970993",
+							"method": "GET",
+							"otherinfo": "1508970993, which evaluates to: 2017-10-26 04:06:33.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1518500249",
+							"method": "GET",
+							"otherinfo": "1518500249, which evaluates to: 2018-02-13 11:07:29.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1522805485",
+							"method": "GET",
+							"otherinfo": "1522805485, which evaluates to: 2018-04-04 07:01:25.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1537002063",
+							"method": "GET",
+							"otherinfo": "1537002063, which evaluates to: 2018-09-15 14:31:03.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1541459225",
+							"method": "GET",
+							"otherinfo": "1541459225, which evaluates to: 2018-11-06 04:37:05.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1546045734",
+							"method": "GET",
+							"otherinfo": "1546045734, which evaluates to: 2018-12-29 06:38:54.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1555081692",
+							"method": "GET",
+							"otherinfo": "1555081692, which evaluates to: 2019-04-12 20:38:12.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1575990012",
+							"method": "GET",
+							"otherinfo": "1575990012, which evaluates to: 2019-12-10 20:30:12.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1595750129",
+							"method": "GET",
+							"otherinfo": "1595750129, which evaluates to: 2020-07-26 13:25:29.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1607167915",
+							"method": "GET",
+							"otherinfo": "1607167915, which evaluates to: 2020-12-05 17:01:55.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1654270250",
+							"method": "GET",
+							"otherinfo": "1654270250, which evaluates to: 2022-06-03 21:00:50.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1694076839",
+							"method": "GET",
+							"otherinfo": "1694076839, which evaluates to: 2023-09-07 14:23:59.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1695183700",
+							"method": "GET",
+							"otherinfo": "1695183700, which evaluates to: 2023-09-20 09:51:40.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1731405415",
+							"method": "GET",
+							"otherinfo": "1731405415, which evaluates to: 2024-11-12 15:26:55.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1732584193",
+							"method": "GET",
+							"otherinfo": "1732584193, which evaluates to: 2024-11-26 06:53:13.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1747873779",
+							"method": "GET",
+							"otherinfo": "1747873779, which evaluates to: 2025-05-22 05:59:39.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1750603025",
+							"method": "GET",
+							"otherinfo": "1750603025, which evaluates to: 2025-06-22 20:07:05.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1779033703",
+							"method": "GET",
+							"otherinfo": "1779033703, which evaluates to: 2026-05-17 21:31:43.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1816402316",
+							"method": "GET",
+							"otherinfo": "1816402316, which evaluates to: 2027-07-24 09:41:56.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1856431235",
+							"method": "GET",
+							"otherinfo": "1856431235, which evaluates to: 2028-10-29 16:50:35.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1859775393",
+							"method": "GET",
+							"otherinfo": "1859775393, which evaluates to: 2028-12-07 09:46:33.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1894007588",
+							"method": "GET",
+							"otherinfo": "1894007588, which evaluates to: 2030-01-07 14:43:08.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1899447441",
+							"method": "GET",
+							"otherinfo": "1899447441, which evaluates to: 2030-03-11 13:47:21.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1914138554",
+							"method": "GET",
+							"otherinfo": "1914138554, which evaluates to: 2030-08-28 14:39:14.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1925078388",
+							"method": "GET",
+							"otherinfo": "1925078388, which evaluates to: 2031-01-02 05:29:48.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1955562222",
+							"method": "GET",
+							"otherinfo": "1955562222, which evaluates to: 2031-12-21 01:13:42.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1986661051",
+							"method": "GET",
+							"otherinfo": "1986661051, which evaluates to: 2032-12-14 23:47:31.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "1996064986",
+							"method": "GET",
+							"otherinfo": "1996064986, which evaluates to: 2033-04-02 19:59:46.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "2003034995",
+							"method": "GET",
+							"otherinfo": "2003034995, which evaluates to: 2033-06-22 12:06:35.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "2007800933",
+							"method": "GET",
+							"otherinfo": "2007800933, which evaluates to: 2033-08-16 15:58:53.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "2024104815",
+							"method": "GET",
+							"otherinfo": "2024104815, which evaluates to: 2034-02-21 08:50:15.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						}
+					],
+					"name": "Timestamp Disclosure - Unix",
+					"otherinfo": "\u003cp\u003e1426881987, which evaluates to: 2015-03-21 01:36:27.\u003c/p\u003e",
+					"pluginid": "10096",
+					"reference": "\u003cp\u003ehttps://cwe.mitre.org/data/definitions/200.html\u003c/p\u003e",
+					"riskcode": "1",
+					"riskdesc": "Low (Low)",
+					"solution": "\u003cp\u003eManually confirm that the timestamp data is not sensitive, and that the data cannot be aggregated to disclose exploitable patterns.\u003c/p\u003e",
+					"sourceid": "28",
+					"wascid": "13"
+				},
+				{
+					"alert": "X-Content-Type-Options Header Missing",
+					"alertRef": "10021",
+					"confidence": "2",
+					"count": "6",
+					"cweid": "693",
+					"desc": "\u003cp\u003eThe Anti-MIME-Sniffing header X-Content-Type-Options was not set to 'nosniff'. This allows older versions of Internet Explorer and Chrome to perform MIME-sniffing on the response body, potentially causing the response body to be interpreted and displayed as a content type other than the declared content type. Current (early 2014) and legacy versions of Firefox will use the declared content type (if one is set), rather than performing MIME-sniffing.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses.",
+							"param": "x-content-type-options",
+							"uri": "http://localhost:5000/apidocs/"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses.",
+							"param": "x-content-type-options",
+							"uri": "http://localhost:5000/flasgger_static/favicon-32x32.png"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses.",
+							"param": "x-content-type-options",
+							"uri": "http://localhost:5000/flasgger_static/lib/jquery.min.js"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses.",
+							"param": "x-content-type-options",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses.",
+							"param": "x-content-type-options",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\nAt \"High\" threshold this scan rule will not alert on client or server error responses.",
+							"param": "x-content-type-options",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui.css"
+						}
+					],
+					"name": "X-Content-Type-Options Header Missing",
+					"otherinfo": "\u003cp\u003eThis issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.\u003c/p\u003e\u003cp\u003eAt \"High\" threshold this scan rule will not alert on client or server error responses.\u003c/p\u003e",
+					"pluginid": "10021",
+					"reference": "\u003cp\u003ehttps://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)\u003c/p\u003e\u003cp\u003ehttps://owasp.org/www-community/Security_Headers\u003c/p\u003e",
+					"riskcode": "1",
+					"riskdesc": "Low (Medium)",
+					"solution": "\u003cp\u003eEnsure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 'nosniff' for all web pages.\u003c/p\u003e\u003cp\u003eIf possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.\u003c/p\u003e",
+					"sourceid": "15",
+					"wascid": "15"
+				},
+				{
+					"alert": "Information Disclosure - Suspicious Comments",
+					"alertRef": "10027",
+					"confidence": "1",
+					"count": "12",
+					"cweid": "200",
+					"desc": "\u003cp\u003eThe response appears to contain suspicious comments which may help an attacker. Note: Matches made within script blocks or files are against the entire content not only comments.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "db",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bDB\\b and was detected 2 times, the first in the element starting with: \"}catch(e){}O.set(a,b,c)}else c=void 0;return c}n.extend({hasData:function(a){return O.hasData(a)||N.hasData(a)},data:function(a,\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/lib/jquery.min.js"
+						},
+						{
+							"attack": "",
+							"evidence": "select",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bSELECT\\b and was detected in the element starting with: \"!function(a,b){\"object\"==typeof module\u0026\u0026\"object\"==typeof module.exports?module.exports=a.document?b(a,!0):function(a){if(!a.docu\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/lib/jquery.min.js"
+						},
+						{
+							"attack": "",
+							"evidence": "debug",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bDEBUG\\b and was detected in the element starting with: \" */t.parse=function(e,t){if(\"string\"!=typeof e)throw new TypeError(\"argument str must be a string\");for(var n={},o=t||{},a=e.spl\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "FROM",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bFROM\\b and was detected 4 times, the first in the element starting with: \" * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "query",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bQUERY\\b and was detected 4 times, the first in the element starting with: \"*/var r=Object.getOwnPropertySymbols,o=Object.prototype.hasOwnProperty,i=Object.prototype.propertyIsEnumerable;function a(e){if(\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "select",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bSELECT\\b and was detected in the element starting with: \" * `reset`, `load`, `error`, and `select`.\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "user",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bUSER\\b and was detected in the element starting with: \" */var r,o=\"\";e.exports=function(e,t){if(\"string\"!=typeof e)throw new TypeError(\"expected a string\");if(1===t)return e;if(2===t)\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "username",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bUSERNAME\\b and was detected in the element starting with: \" */,e.exports=function(e,t){if(!o.canUseDOM||t\u0026\u0026!(\"addEventListener\"in document))return!1;var n=\"on\"+e,i=n in document;if(!i){va\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "xxx",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bXXX\\b and was detected in the element starting with: \"var n,r=this\u0026\u0026this.__extends||(n=function(e,t){return(n=Object.setPrototypeOf||{__proto__:[]}instanceof Array\u0026\u0026function(e,t){e._\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-bundle.js"
+						},
+						{
+							"attack": "",
+							"evidence": "from",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bFROM\\b and was detected 2 times, the first in the element starting with: \"!function(t,e){\"object\"==typeof exports\u0026\u0026\"object\"==typeof module?module.exports=e(function(){try{return require(\"esprima\")}catch\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "select",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bSELECT\\b and was detected in the element starting with: \" */Object.defineProperty(e,\"__esModule\",{value:!0});var r=\"function\"==typeof Symbol\u0026\u0026Symbol.for,i=r?Symbol.for(\"react.element\"):\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						},
+						{
+							"attack": "",
+							"evidence": "user",
+							"method": "GET",
+							"otherinfo": "The following pattern was used: \\bUSER\\b and was detected in the element starting with: \"var r=n(244),i=n(245),o=n(141);function u(){return a.TYPED_ARRAY_SUPPORT?2147483647:1073741823}function s(t,e){if(u()\u003ce)throw ne\", see evidence field for the suspicious comment/snippet.",
+							"param": "",
+							"uri": "http://localhost:5000/flasgger_static/swagger-ui-standalone-preset.js"
+						}
+					],
+					"name": "Information Disclosure - Suspicious Comments",
+					"otherinfo": "\u003cp\u003eThe following pattern was used: \\bDB\\b and was detected 2 times, the first in the element starting with: \"}catch(e){}O.set(a,b,c)}else c=void 0;return c}n.extend({hasData:function(a){return O.hasData(a)||N.hasData(a)},data:function(a,\", see evidence field for the suspicious comment/snippet.\u003c/p\u003e",
+					"pluginid": "10027",
+					"reference": "",
+					"riskcode": "0",
+					"riskdesc": "Informational (Low)",
+					"solution": "\u003cp\u003eRemove all comments that return information that may help an attacker and fix any underlying problems they refer to.\u003c/p\u003e",
+					"sourceid": "25",
+					"wascid": "13"
+				},
+				{
+					"alert": "User Agent Fuzzer",
+					"alertRef": "10104",
+					"confidence": "2",
+					"count": "12",
+					"cweid": "0",
+					"desc": "\u003cp\u003eCheck for differences in response based on fuzzed User Agent (eg. mobile sites, access as a Search Engine Crawler). Compares the response statuscode and the hashcode of the response body with the original response.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3739.0 Safari/537.36 Edg/75.0.109.0",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/91.0",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/5.0 (iPhone; CPU iPhone OS 8_0_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						},
+						{
+							"attack": "msnbot/1.1 (+http://search.msn.com/msnbot.htm)",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "Header User-Agent",
+							"uri": "http://localhost:5000/apidocs"
+						}
+					],
+					"name": "User Agent Fuzzer",
+					"otherinfo": "",
+					"pluginid": "10104",
+					"reference": "\u003cp\u003ehttps://owasp.org/wstg\u003c/p\u003e",
+					"riskcode": "0",
+					"riskdesc": "Informational (Medium)",
+					"solution": "",
+					"sourceid": "176",
+					"wascid": "0"
+				}
+			]
+		}
+	]
+}
