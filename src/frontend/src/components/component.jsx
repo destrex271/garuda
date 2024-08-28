@@ -101,3 +101,5 @@ function GarudaIcon(props){
   )
 }
 
+major 
+
