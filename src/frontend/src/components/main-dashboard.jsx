@@ -44,6 +44,7 @@ export function MainDashboard({data}) {
               <TableHead>API</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Endpoint</TableHead>
+              <TableHead>Last Tested At</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -52,6 +53,9 @@ export function MainDashboard({data}) {
               console.log(stat[stat.length - 1])
               const finStat = stat[stat.length - 1]['status'].toUpperCase()
               console.log(finStat)
+              const time = stat[stat.length - 1]['created_time']
+              var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+              d.setUTCSeconds(parseInt(time));
               return (
               <TableRow>
                 <TableCell>
@@ -70,6 +74,9 @@ export function MainDashboard({data}) {
                 </TableCell>
                 <TableCell>
                   <p className="text-muted-foreground">https://localhost:5000/{dt["path"]}</p>
+                </TableCell>
+                <TableCell>
+                  <p className="text-muted-foreground">{d.toDateString() + " " + d.toTimeString()}</p>
                 </TableCell>
               </TableRow>
             )
