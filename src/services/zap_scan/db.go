@@ -56,13 +56,14 @@ func PopulateTestResults(api_data map[string]interface{}, endpoints map[string]A
 				args := &pgx.NamedArgs{
 					"inv":     data.inventory,
 					"api":     data.id,
-					"results": fmt.Sprintf("[%s,{\"status\": \"ok\", \"created_time\": \"%d\"}]", res_data, cr_time),
+					"results": fmt.Sprintf("[%s,{\"status\": \"ok\", \"created_time\": \"%d\"}]", res_data[1:len(res_data)-1], cr_time),
 				}
 				_, err = conn.Exec(context.Background(), "update test_results set results=@results where inventory=@inv and api_id=@api", args)
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
+			UpdateEndpointAsOld(conn, data.id)
 		}
 		return
 	}
@@ -93,23 +94,26 @@ func PopulateTestResults(api_data map[string]interface{}, endpoints map[string]A
 			args := &pgx.NamedArgs{
 				"inv":     data.inventory,
 				"api":     data.id,
-				"results": fmt.Sprintf("[%s,%s]", res_data, res),
+				"results": fmt.Sprintf("[%s,%s]", res_data[1:len(res_data)-1], res),
 			}
 			_, err = conn.Exec(context.Background(), "update test_results set results=@results where inventory=@inv and api_id=@api", args)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
+		UpdateEndpointAsOld(conn, data.id)
 	}
 	log.Println("Updated!")
 }
 
-func UpdateEndpointAsOld(conn *pgx.Conn, api API) (bool, error) {
+func UpdateEndpointAsOld(conn *pgx.Conn, id int) (bool, error) {
 	args := &pgx.NamedArgs{
-		"id": api.id,
+		"id": id,
 	}
-	_, err := conn.Exec(context.Background(), "update api set is_new=false where id = @id", args)
+	op, err := conn.Exec(context.Background(), "update api set is_new=false where id = @id", args)
+	log.Println(op)
 	if err != nil {
+		log.Println(err)
 		return false, err
 	}
 	return true, nil
