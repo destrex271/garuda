@@ -12,7 +12,7 @@ import (
 
 func GetNewEndpoints(conn *pgx.Conn) (map[string]API, error) {
 	// get all new endpoints
-	rows, err := conn.Query(context.Background(), "select id, name, description, path, created_time, req_type, inventory, responses, operationid, produces, is_new from api where is_new=$1", true)
+	rows, err := conn.Query(context.Background(), "select id, name, description, path, created_time, req_type, inventory, responses, operationid, produces, is_new, reqb from api where is_new=$1", true)
 
 	if err != nil {
 		log.Fatal("ERR", err)
@@ -23,7 +23,7 @@ func GetNewEndpoints(conn *pgx.Conn) (map[string]API, error) {
 
 	for rows.Next() {
 		api := new(API)
-		err = rows.Scan(&api.id, &api.name, &api.description, &api.path, &api.createdDate, &api.reqType, &api.inventory, &api.responses, &api.operationid, &api.produces, &api.is_new)
+		err = rows.Scan(&api.id, &api.name, &api.description, &api.path, &api.createdDate, &api.reqType, &api.inventory, &api.responses, &api.operationid, &api.produces, &api.is_new, &api.reqb)
 		if err != nil {
 			log.Println("ERROR", err)
 			continue // Skip to next row on error

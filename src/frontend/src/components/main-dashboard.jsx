@@ -27,7 +27,6 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Badge } from "@/components/ui/badge"
 
 export function MainDashboard({data}) {
-  console.log(data)
   return (
     (<div className="flex flex-col min-h-screen bg-muted/40">
       <header className="bg-background border-b px-4 sm:px-6 flex items-center h-16">
@@ -44,20 +43,21 @@ export function MainDashboard({data}) {
               <TableHead>API</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Endpoint</TableHead>
-              <TableHead>Last Tested At</TableHead>
+              <TableHead>Last Tested </TableHead>
+              <TableHead>View </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            { data.map((dt)=>{
-              const stat = JSON.parse(dt['testResults'])
-              console.log(stat[stat.length - 1])
-              const finStat = stat[stat.length - 1]['status'].toUpperCase()
-              console.log(finStat)
-              const time = stat[stat.length - 1]['created_time']
-              var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-              d.setUTCSeconds(parseInt(time));
-              return (
-              <TableRow>
+            {data.map((dt) => {
+              console.log
+               const stat = JSON.parse(dt['testResults'])
+               console.log(stat[stat.length - 1])
+               const finStat = stat[stat.length - 1]['status'].toUpperCase()
+               console.log(finStat)
+               const time = stat[stat.length - 1]['created_time']
+               var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+               d.setUTCSeconds(parseInt(time));
+              return (<TableRow>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <PiIcon className="w-4 h-4" />
@@ -67,7 +67,7 @@ export function MainDashboard({data}) {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="bg-green-400">
-                      {finStat}
+                    {finStat}
                     </Badge>
                     <p className="text-muted-foreground">{dt['description']}</p>
                   </div>
@@ -78,9 +78,12 @@ export function MainDashboard({data}) {
                 <TableCell>
                   <p className="text-muted-foreground">{d.toDateString() + " " + d.toTimeString()}</p>
                 </TableCell>
-              </TableRow>
-            )
-            })}
+                <TableCell>
+                  <a href={`/${dt['id']}`}>View</a>
+                </TableCell>
+              </TableRow>)
+              })
+            }
           </TableBody>
         </Table>
       </main>

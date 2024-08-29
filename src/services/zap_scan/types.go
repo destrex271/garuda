@@ -26,6 +26,7 @@ type API struct {
 	createdDate uint64
 	inventory   int
 	responses   string
+	reqb        string
 	operationid any
 	produces    any
 	is_new      bool

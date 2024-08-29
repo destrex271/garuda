@@ -111,6 +111,8 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 				return err
 			}
 
+			reqBody, err := json.Marshal(dt["requestBody"])
+
 			tm := time.Now().Unix()
 
 			opid := dt["operationid"]
@@ -135,6 +137,7 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 				"responses":   responses,
 				"operationid": opid,
 				"produces":    prod,
+				"reqb":        reqBody,
 			}
 
 			// Check if API already exists or not
@@ -144,7 +147,7 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 
 			if id == 0 {
 				_, err = conn.Exec(context.Background(),
-					"INSERT INTO api(name, description, path, parameters, created_time, inventory, req_type, responses, operationid, produces) VALUES (@name, @desc, @path, @params, @time, @id, @req_type, @responses, @operationid, @produces)", args)
+					"INSERT INTO api(name, description, path, parameters, created_time, inventory, req_type, responses, operationid, produces, reqb) VALUES (@name, @desc, @path, @params, @time, @id, @req_type, @responses, @operationid, @produces, @reqb)", args)
 			} else {
 				log.Println("Updating endpoint")
 				// Update endpoint
@@ -168,10 +171,11 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 						"id":        invID,
 						"responses": responses,
 						"oid":       id,
+						"reqb":      reqBody,
 					}
 
 					_, err = conn.Exec(context.Background(),
-						"UPDATE api SET description=@desc, created_time=@time, responses=@responses, parameters=@params WHERE inventory=@id AND id=@oid", args)
+						"UPDATE api SET description=@desc, created_time=@time, responses=@responses, parameters=@params, reqb=@reqb WHERE inventory=@id AND id=@oid", args)
 					if err != nil {
 						log.Println("Error updating API:", err)
 						return err

@@ -30,6 +30,7 @@ type API struct {
 	CreatedDate uint64      `json:"createdDate"`
 	Inventory   int         `json:"inventory"`
 	Responses   string      `json:"responses"`
+	Reqb        string      `json:"requestBody"`
 	OperationID interface{} `json:"operationId"`
 	Produces    interface{} `json:"produces"`
 	IsNew       bool        `json:"isNew"`
@@ -40,7 +41,7 @@ func GetAllAPIs() ([]API, error) {
 	// Query for API data
 	rows, err := config.Conn.Query(context.Background(), `
         SELECT id, name, description, path, created_time, req_type, inventory, 
-               responses, operationid, produces, is_new 
+               responses, operationid, produces, is_new, reqb 
         FROM api
     `)
 	if err != nil {
@@ -54,7 +55,7 @@ func GetAllAPIs() ([]API, error) {
 		err = rows.Scan(
 			&api.ID, &api.Name, &api.Description, &api.Path, &api.CreatedDate,
 			&api.ReqType, &api.Inventory, &api.Responses, &api.OperationID,
-			&api.Produces, &api.IsNew,
+			&api.Produces, &api.IsNew, &api.Reqb,
 		)
 		if err != nil {
 			log.Printf("Error scanning API row: %v", err)
