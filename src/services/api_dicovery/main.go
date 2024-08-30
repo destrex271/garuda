@@ -16,6 +16,7 @@ import (
 )
 
 var target string
+var host string
 
 type Registry map[int]interface{}
 
@@ -81,9 +82,10 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 		// Add to inventory
 		args := pgx.NamedArgs{
 			"name":   path,
+			"path":   host + path,
 			"app_id": appID,
 		}
-		_, err := conn.Exec(context.Background(), "INSERT INTO Inventory(name, path, app_id) VALUES(@name, @name, @app_id)", args)
+		_, err := conn.Exec(context.Background(), "INSERT INTO Inventory(name, path, app_id) VALUES(@name, @path, @app_id)", args)
 		if err != nil {
 			log.Println("Error inserting into inventory:", err)
 		}
@@ -128,7 +130,7 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 
 			args = pgx.NamedArgs{
 				"name":        path,
-				"path":        path,
+				"path":        host + path,
 				"req_type":    reqType,
 				"desc":        dt["description"],
 				"time":        tm,
@@ -163,7 +165,7 @@ func PopulateAPIAndResponse(data map[string]interface{}, conn *pgx.Conn, appID i
 					tm := time.Now().Unix()
 					args = pgx.NamedArgs{
 						"name":      path,
-						"path":      path,
+						"path":      host + path,
 						"req_type":  reqType,
 						"desc":      dt["description"],
 						"time":      tm,
@@ -239,8 +241,10 @@ func PopulateModelRegistry(conn *pgx.Conn, appID int) error {
 		return err
 	}
 	defer rows.Close()
+	ctr := 0
 
 	for rows.Next() {
+		ctr++
 		var name string
 		err = rows.Scan(&name)
 		if err != nil {
@@ -248,6 +252,11 @@ func PopulateModelRegistry(conn *pgx.Conn, appID int) error {
 			return err
 		}
 		models[name] = false
+	}
+
+	if ctr == 0 {
+		log.Println("No models!")
+		return nil
 	}
 
 	modelsRegistry[appID] = models
@@ -280,6 +289,9 @@ func DeleteNonExistentEndpoints(conn *pgx.Conn, appID int) error {
 }
 
 func DeleteNonExistentModels(conn *pgx.Conn, appID int) error {
+	if len(modelsRegistry) == 0 {
+		return nil
+	}
 	models, ok := modelsRegistry[appID].(map[string]bool)
 	if !ok {
 		log.Println("Error: Unable to extract models from registry")
@@ -302,6 +314,9 @@ func DeleteNonExistentModels(conn *pgx.Conn, appID int) error {
 }
 
 func main() {
+	apiDocs := flag.String("apiDocs", "", "URL/File path to the swagger json file")
+	flag.Parse()
+
 	conn, err := pgx.Connect(context.Background(), "postgres://postgres:postgres@localhost:5432/api_inventory")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
@@ -309,27 +324,47 @@ func main() {
 	}
 	defer conn.Close(context.Background())
 
-	port := flag.String("port", "5000", "Port of application")
-	json_file_url := flag.String("apiDocs", fmt.Sprintf("http://0.0.0.0:%s/swagger.json", *port), "URL for OpenAPI specification json.")
+	isURL := false
+	if (*apiDocs)[0:4] == "http" {
+		isURL = true
+	}
 	flag.Parse()
 
-	resp, err := http.Get(*json_file_url)
-	if err != nil {
-		log.Fatal("Error fetching swagger.json:", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("Error reading response body:", err)
-	}
-
 	var data map[string]interface{}
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		log.Fatal("Error unmarshalling JSON:", err)
+
+	if !isURL {
+		// Logic to read file and decipher into file
+		var dc interface{}
+		content, err := os.ReadFile(*apiDocs)
+		log.Println(string(content))
+		if err != nil {
+			log.Fatalf("Error reading file: %v", err)
+		}
+		json.Unmarshal(content, &dc)
+		if dc == nil {
+			panic("No Data in JSON file!")
+		}
+		data = dc.(map[string]interface{})
+	} else {
+		// Logic to decipher json from URL
+		resp, err := http.Get(*apiDocs)
+		if err != nil {
+			log.Fatal("Error fetching swagger.json:", err)
+		}
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal("Error reading response body:", err)
+		}
+
+		err = json.Unmarshal(body, &data)
+		if err != nil {
+			log.Fatal("Error unmarshalling JSON:", err)
+		}
 	}
 
+	host = data["host"].(string)
 	info, isOk := data["info"].(map[string]interface{})
 	if !isOk {
 		log.Fatal("Unable to get info from swagger JSON")
@@ -373,9 +408,11 @@ func main() {
 		log.Fatal("Error populating model registry:", err)
 	}
 
-	err = PopulateModels(data["definitions"].(map[string]interface{}), conn, appID)
-	if err != nil {
-		log.Fatal("Error populating models:", err)
+	if len(modelsRegistry) != 0 {
+		err = PopulateModels(data["definitions"].(map[string]interface{}), conn, appID)
+		if err != nil {
+			log.Fatal("Error populating models:", err)
+		}
 	}
 
 	err = PopulateAPIAndResponse(data["paths"].(map[string]interface{}), conn, appID)

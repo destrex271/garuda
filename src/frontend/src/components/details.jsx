@@ -63,10 +63,10 @@ export function Details({data}) {
     (<div className="flex flex-col min-h-screen bg-muted/40">
       <header className="bg-background border-b px-4 sm:px-6 flex items-center h-16">
         <div className="flex items-center gap-2">
-          <PiIcon className="w-6 h-6" />
-          <h1 className="text-lg font-semibold">Garuda</h1>
+          <GarudaIcon className="w-6 h-6" />
+          <h1 className="text-lg font-semibold"><a href="/">Garuda</a></h1>
         </div>
-        <p className="ml-4 text-muted-foreground text-sm">A powerful API Inventory and Security system</p>
+        <p className="ml-4 text-muted-foreground text-sm">Manage and monitor all your API endpoints.</p>
       </header>
       <main className="flex-1 grid gap-8 p-4 sm:p-6 md:grid-cols-2">
         <Card>
@@ -79,7 +79,7 @@ export function Details({data}) {
               <p className="text-muted-foreground">http://localhost:5000{data['path']}</p>
             </div>
             <div>
-              <h3 className="text-lg font-medium">Status</h3>
+              <h3 className="text-lg font-medium">Current Status</h3>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="bg-green-400">
                   {finStat}
@@ -131,7 +131,9 @@ export function Details({data}) {
                           </ul>
                         </TableCell>
                         <TableCell>
-                          
+                        <Badge variant="outline" className="bg-yellow-400">
+                          {res['status'].toUpperCase()}
+                          </Badge>
                         </TableCell>
                       </TableRow>
                     )
@@ -207,4 +209,9 @@ function PiIcon(props) {
       <path d="M18 20c-1.7 0-3-1.3-3-3V4" />
     </svg>)
   );
+}
+
+function GarudaIcon() {
+  return (
+    (<img src="https://i.ibb.co/wc49JVH/Firefly-garuda-logo-minimal-sharp-eagle-sharper-eyes-protecting-in-darkness-only-border-shine-g-1-re.png" width="8%"/>));
 }

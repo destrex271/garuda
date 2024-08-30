@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/zaproxy/zap-api-go/zap"
@@ -23,9 +24,22 @@ import (
 **/
 
 var target string
+var apidocs string
+var baseURL string
+var appName string
+var client zap.Interface
+var cfg *zap.Config
 
 func init() {
-	flag.StringVar(&target, "target", "http://localhost:5000/apidocs", "target address")
+	flag.StringVar(&target, "target", "http://localhost:16000/apidocs", "target address")
+	flag.StringVar(&apidocs, "apidocs", "/home/akshat/fg/dummyapi2/", "target address")
+	flag.StringVar(&baseURL, "baseurl", "http://localhost:16000", "targ")
+	flag.StringVar(&appName, "appname", "REST API", "targ")
+	cfg = &zap.Config{
+		Proxy: "http://127.0.0.1:8081",
+	}
+	client, _ = zap.NewClient(cfg)
+
 	flag.Parse()
 }
 
@@ -71,14 +85,6 @@ func GetEndpointsFromAlerts(data map[string]interface{}, endpoints map[string]AP
 }
 
 func ActiveZapScan() (map[string]interface{}, error) {
-	cfg := &zap.Config{
-		Proxy: "http://127.0.0.1:8081",
-	}
-
-	client, err := zap.NewClient(cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	spider := client.Spider()
 	resp, err := spider.Scan(target, "", "", "", "")
@@ -125,7 +131,6 @@ func ActiveZapScan() (map[string]interface{}, error) {
 	}
 	log.Println("Scan complete")
 
-	fmt.Println("Alerts:")
 	report, err := client.Core().Jsonreport()
 	if err != nil {
 		log.Fatal(err)
@@ -137,20 +142,127 @@ func ActiveZapScan() (map[string]interface{}, error) {
 	return jsonReport, nil
 }
 
-func main() {
+func LoadSiteMap() {
+	apis := client.Openapi()
+	apis.ImportFile(apidocs, baseURL, "1")
+	log.Println("Loaded sitemap")
+}
 
-	data, err := ActiveZapScan()
+func ActiveZapScanSingle(url string, nm string) (map[string]interface{}, error) {
+
+	log.Println("Scanning -> ", url)
+
+	spider := client.Spider()
+	resp, err := spider.Scan(url, "", "", "", "")
+
+	log.Println("OK", resp)
+	scanId := resp["scan"].(string)
+
+	var stat int
+	stat = 0
+	for stat < 100 {
+		resp, err = spider.Status(scanId)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		stat, _ = strconv.Atoi(resp["status"].(string))
+		log.Println(stat)
+	}
+	log.Println("Scan complete")
+	res, err := spider.Results(scanId)
+	log.Println(res)
+
+	LoadSiteMap()
+
+	scanner := client.Ascan()
+
+	resp, err = scanner.Scan(url, "", "", "", "", "", "")
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	file, err := os.Create("file.json")
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "	")
-	if err := encoder.Encode(data); err != nil {
+	// log.Println(resp)
+
+	scanID := resp["scan"].(string)
+
+	stat = 0
+	for stat < 100 {
+		resp, err = scanner.Status(scanID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		stat, _ = strconv.Atoi(resp["status"].(string))
+		log.Println(stat)
+	}
+	log.Println("Scan complete")
+
+	report, err := client.Core().Jsonreport()
+	if err != nil {
 		log.Fatal(err)
 	}
 
+	var jsonReport map[string]interface{}
+	json.Unmarshal([]byte(report), &jsonReport)
+
+	file, err := os.Create(nm + "_result.json")
+	if err != nil {
+		log.Println("Unable to create file", err)
+	}
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "	")
+	if err := encoder.Encode(jsonReport); err != nil {
+		log.Fatal(err)
+	}
+
+	defer file.Close()
+
+	return jsonReport, nil
+}
+
+// func main() {
+
+// 	log.Println(target)
+// 	LoadSiteMap()
+// 	data, err := ActiveZapScan()
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	file, err := os.Create("file.json")
+// 	encoder := json.NewEncoder(file)
+// 	encoder.SetIndent("", "	")
+// 	if err := encoder.Encode(data); err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	conn, err := pgx.Connect(context.Background(), "postgres://postgres:postgres@localhost:5432/api_inventory")
+// 	if err != nil {
+// 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+// 		os.Exit(1)
+// 	}
+// 	defer conn.Close(context.Background())
+
+// 	endpoints, err := GetNewEndpoints(conn)
+
+// 	alert_data, err := GetEndpointsFromAlerts(data, endpoints)
+
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	log.Println(alert_data)
+
+// 	PopulateTestResults(alert_data, endpoints, conn)
+// }
+
+func main() {
+	log.Println(target)
+
+	// Get all endpoints of application
 	conn, err := pgx.Connect(context.Background(), "postgres://postgres:postgres@localhost:5432/api_inventory")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
@@ -158,15 +270,36 @@ func main() {
 	}
 	defer conn.Close(context.Background())
 
-	endpoints, err := GetNewEndpoints(conn)
+	endpoints, _ := GetNewEndpointsForApplication(conn, appName)
+	log.Println(endpoints)
 
-	alert_data, err := GetEndpointsFromAlerts(data, endpoints)
+	var alerts map[string]interface{}
+	// log.Fatal(endpoints)
 
-	if err != nil {
-		log.Fatal(err)
+	for _, api := range endpoints {
+		log.Println("Active scan for ", api.path)
+		re := regexp.MustCompile(`\{[a-zA-Z0-9_]+\}`)
+		// url = re.ReplaceAllString(url, replacementValue)
+		log.Println("Checking ", api.path)
+		if re.MatchString(api.path) {
+			log.Println("Skipping")
+			continue
+		}
+
+		if api.path[0:5] != "http" {
+			api.path = "http://" + api.path
+		}
+		LoadSiteMap()
+
+		alerts, err = ActiveZapScanSingle(api.path, strings.ReplaceAll(api.name, "/", "_"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("OKK")
 	}
+	PopulateTestResultsSingleScan(alerts, endpoints, conn)
 
-	log.Println(alert_data)
-
-	PopulateTestResults(alert_data, endpoints, conn)
+	if len(alerts) == 0 {
+		log.Println(alerts)
+	}
 }

@@ -31,8 +31,8 @@ export function MainDashboard({data}) {
     (<div className="flex flex-col min-h-screen bg-muted/40">
       <header className="bg-background border-b px-4 sm:px-6 flex items-center h-16">
         <div className="flex items-center gap-2">
-          <PiIcon className="w-6 h-6" />
-          <h1 className="text-lg font-semibold">Acme API Dashboard</h1>
+          <GarudaIcon className="w-6 h-6" />
+          <h1 className="text-lg font-semibold"><a href="/">Garuda</a></h1>
         </div>
         <p className="ml-4 text-muted-foreground text-sm">Manage and monitor all your API endpoints.</p>
       </header>
@@ -79,7 +79,8 @@ export function MainDashboard({data}) {
                   <p className="text-muted-foreground">{d.toDateString() + " " + d.toTimeString()}</p>
                 </TableCell>
                 <TableCell>
-                  <a href={`/${dt['id']}`}>View</a>
+                  <a href={`/${dt['id']}`} className="px-2">View</a>
+                  <a href={`/configure/${dt['id']}`}>Configure</a>
                 </TableCell>
               </TableRow>)
               })
@@ -109,4 +110,10 @@ function PiIcon(props) {
       <path d="M18 20c-1.7 0-3-1.3-3-3V4" />
     </svg>)
   );
+}
+
+
+function GarudaIcon() {
+  return (
+    (<img src="https://i.ibb.co/wc49JVH/Firefly-garuda-logo-minimal-sharp-eagle-sharper-eyes-protecting-in-darkness-only-border-shine-g-1-re.png" width="8%"/>));
 }
