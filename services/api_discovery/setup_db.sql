@@ -6,7 +6,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS public.api
 (
     id serial NOT NULL,
-    name text COLLATE pg_catalog."default",
+    name text COLLATE pg_catalog."default" NOT NULL,
     description text COLLATE pg_catalog."default",
     path text COLLATE pg_catalog."default",
     parameters jsonb,
@@ -14,6 +14,10 @@ CREATE TABLE IF NOT EXISTS public.api
     req_type character varying(255) COLLATE pg_catalog."default",
     inventory serial NOT NULL,
     responses jsonb,
+    operationid character varying(255) COLLATE pg_catalog."default",
+    produces jsonb,
+    is_new boolean DEFAULT true,
+    reqb jsonb,
     CONSTRAINT api_pkey PRIMARY KEY (id)
 );
 
@@ -37,17 +41,26 @@ CREATE TABLE IF NOT EXISTS public.inventory
 CREATE TABLE IF NOT EXISTS public.model
 (
     id serial NOT NULL,
-    name character varying(255) COLLATE pg_catalog."default",
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
     fields jsonb,
     app_id serial NOT NULL,
-    CONSTRAINT model_pkey PRIMARY KEY (id)
+    CONSTRAINT model_pkey PRIMARY KEY (name, app_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.test_results
+(
+    id serial NOT NULL,
+    inventory serial NOT NULL,
+    api_id serial NOT NULL,
+    results jsonb,
+    CONSTRAINT test_results_pkey PRIMARY KEY (api_id, inventory)
 );
 
 ALTER TABLE IF EXISTS public.api
     ADD CONSTRAINT fk_inventory FOREIGN KEY (inventory)
     REFERENCES public.inventory (id) MATCH SIMPLE
     ON UPDATE NO ACTION
-    ON DELETE NO ACTION;
+    ON DELETE CASCADE;
 
 
 ALTER TABLE IF EXISTS public.inventory
@@ -62,5 +75,19 @@ ALTER TABLE IF EXISTS public.model
     REFERENCES public.application (id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE CASCADE;
+
+
+ALTER TABLE IF EXISTS public.test_results
+    ADD CONSTRAINT test_results_api_id_fkey FOREIGN KEY (api_id)
+    REFERENCES public.api (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.test_results
+    ADD CONSTRAINT test_results_inventory_fkey FOREIGN KEY (inventory)
+    REFERENCES public.inventory (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
 
 END;
