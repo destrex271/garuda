@@ -6,4 +6,7 @@ go run . &
 
 # start frontend
 cd ../frontend
-npm run dev
+npm run dev &
+
+
+echo "started!"
