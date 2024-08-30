@@ -132,6 +132,10 @@ func PopulateTestResultsSingleScan(alerts_map map[string]interface{}, endpoints 
 
 	for _, alert := range alerts {
 		alert_dt, _ := alert.(map[string]interface{})
+		riskcode, _ := alert_dt["riskcode"].(string)
+		if riskcode == "0" {
+			continue
+		}
 		alert_obj := Alert{
 			Name:        alert_dt["alert"].(string),
 			Confidence:  alert_dt["confidence"].(string),
@@ -184,95 +188,27 @@ func PopulateTestResultsSingleScan(alerts_map map[string]interface{}, endpoints 
 				_, err = conn.Exec(context.Background(), "update test_results set results=@results where inventory=@inv and api_id=@api", args)
 				if err != nil {
 					log.Fatal("FATAL", err)
+				} else {
+					checklist[key] = true
 				}
+			} else {
+				checklist[key] = true
 			}
 		}
 	}
 
-	// for key, exists := range checklist {
-	// 	if exists {
-	// 		continue
-	// 	}
-	// 	api := endpoints[key]
-	// 	args := &pgx.NamedArgs{
-	// 		"inv":     api.inventory,
-	// 		"api":     api.id,
-	// 		"results": fmt.Sprintf("[{\"status\": \"ok\", \"created_time\": \"%d\"}]", created_time),
-	// 	}
-	// 	_, err := conn.Exec(context.Background(), "insert into test_results(inventory, api_id, results) values(@inv, @api, @results)", args)
-	// 	if err != nil {
-	// 		log.Println(err)
-	// 		var res_data string
-	// 		err = conn.QueryRow(context.Background(), "select results from test_results where inventory=@inv and api_id=@api", args).Scan(&res_data)
-	// 		args := &pgx.NamedArgs{
-	// 			"inv":     api.inventory,
-	// 			"api":     api.id,
-	// 			"results": fmt.Sprintf("[%s,{\"status\": \"ok\", \"created_time\": \"%d\"}]", res_data[1:len(res_data)-1], created_time),
-	// 		}
-	// 		_, err = conn.Exec(context.Background(), "update test_results set results=@results where inventory=@inv and api_id=@api", args)
-	// 		if err != nil {
-	// 			log.Fatal(err)
-	// 		} else {
-	// 			checklist[key] = true
-	// 		}
-	// 	} else {
-	// 		checklist[key] = true
-	// 	}
-	// }
-
-	log.Println("FIN POPS")
-	return nil
-
-}
-
-func PopulateTestResults(api_data map[string]interface{}, endpoints map[string]API, conn *pgx.Conn) {
-	// if len(api_data) == 0 {
-	// 	for _, data := range endpoints {
-
-	// 		cr_time := time.Now().Unix()
-	// 		args := &pgx.NamedArgs{
-	// 			"inv":     data.inventory,
-	// 			"api":     data.id,
-	// 			"results": fmt.Sprintf("[{\"status\": \"ok\", \"created_time\": \"%d\"}]", cr_time),
-	// 		}
-	// 		_, err := conn.Exec(context.Background(), "insert into test_results(inventory, api_id, results) values(@inv, @api, @results)", args)
-
-	// 		if err != nil {
-	// 			// Get previous jsonb data and append as
-	// 			var res_data string
-	// 			err = conn.QueryRow(context.Background(), "select results from test_results where inventory=@inv and api_id=@api", args).Scan(&res_data)
-	// 			args := &pgx.NamedArgs{
-	// 				"inv":     data.inventory,
-	// 				"api":     data.id,
-	// 				"results": fmt.Sprintf("[%s,{\"status\": \"ok\", \"created_time\": \"%d\"}]", res_data[1:len(res_data)-1], cr_time),
-	// 			}
-	// 			_, err = conn.Exec(context.Background(), "update test_results set results=@results where inventory=@inv and api_id=@api", args)
-	// 			if err != nil {
-	// 				log.Fatal(err)
-	// 			}
-	// 		}
-	// 		UpdateEndpointAsOld(conn, data.id)
-	// 	}
-	// 	return
-	// }
-
-	for key, data := range endpoints {
-		results := api_data[key+"_"+data.reqType]
-		var res string
-		if results == nil {
-			res = "[{\"status\": \"ok\"}]"
-		} else {
-			bts, err := json.Marshal(results)
-			if err != nil {
-				log.Fatal("ER", err)
-			}
-			res = string(bts)
+	// Add Success Result for other endpoints that are not checked
+	for key, exists := range checklist {
+		log.Println(exists)
+		if exists {
+			continue
 		}
-
+		log.Println("Adding for -> ", key)
+		api := endpoints[key]
 		args := &pgx.NamedArgs{
-			"inv":     data.inventory,
-			"api":     data.id,
-			"results": res,
+			"inv":     api.inventory,
+			"api":     api.id,
+			"results": fmt.Sprintf("[{\"status\": \"ok\", \"created_time\": \"%d\"}]", created_time),
 		}
 		_, err := conn.Exec(context.Background(), "insert into test_results(inventory, api_id, results) values(@inv, @api, @results)", args)
 		if err != nil {
@@ -280,17 +216,24 @@ func PopulateTestResults(api_data map[string]interface{}, endpoints map[string]A
 			var res_data string
 			err = conn.QueryRow(context.Background(), "select results from test_results where inventory=@inv and api_id=@api", args).Scan(&res_data)
 			args := &pgx.NamedArgs{
-				"inv":     data.inventory,
-				"api":     data.id,
-				"results": fmt.Sprintf("[%s,%s]", res_data[1:len(res_data)-1], res),
+				"inv":     api.inventory,
+				"api":     api.id,
+				"results": fmt.Sprintf("[%s,{\"status\": \"ok\", \"created_time\": \"%d\"}]", res_data[1:len(res_data)-1], created_time),
 			}
 			_, err = conn.Exec(context.Background(), "update test_results set results=@results where inventory=@inv and api_id=@api", args)
 			if err != nil {
 				log.Fatal(err)
+			} else {
+				checklist[key] = true
 			}
+		} else {
+			checklist[key] = true
 		}
 	}
-	log.Println("Updated!")
+
+	log.Println("FIN POPS")
+	return nil
+
 }
 
 func UpdateEndpointAsOld(conn *pgx.Conn, id int) (bool, error) {

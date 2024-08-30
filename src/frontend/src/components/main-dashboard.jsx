@@ -26,6 +26,7 @@ To read more about using these font, please visit the Next.js documentation:
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
+
 export function MainDashboard({data}) {
   return (
     (<div className="flex flex-col min-h-screen bg-muted/40">
@@ -41,7 +42,7 @@ export function MainDashboard({data}) {
           <TableHeader>
             <TableRow>
               <TableHead>API</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Latest Status</TableHead>
               <TableHead>Endpoint</TableHead>
               <TableHead>Last Tested </TableHead>
               <TableHead>View </TableHead>
@@ -54,13 +55,63 @@ export function MainDashboard({data}) {
                   stat = JSON.parse(dt['testResults']);
               } catch (e) {
                   console.error("Failed to parse 'testResults' for entry:", dt);
-                  return; // Skip this entry if parsing fails
+                  return(<TableRow>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <PiIcon className="w-4 h-4" />
+                        <span>{dt["name"]} - {dt["reqType"].toUpperCase()}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-green-400">
+                          No Tests Performed
+                        </Badge>
+                        <p className="text-muted-foreground">{dt['description']}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-muted-foreground">https://localhost:5000/{dt["path"]}</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-muted-foreground">No Tests Conducted Yet</p>
+                    </TableCell>
+                    <TableCell>
+                      <a href={`/${dt['id']}`} className="px-2">View</a>
+                      <a href={`/configure/${dt['id']}`}>Configure</a>
+                    </TableCell>
+                  </TableRow>); // Skip this entry if parsing fails
               }
           
               // Check if 'stat' is an array and has elements
               if (!Array.isArray(stat) || stat.length === 0) {
                   console.log("Skipping empty or invalid 'testResults' for entry:", dt);
-                  return; // Skip this entry if 'testResults' is empty or not an array
+                  return(<TableRow>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <PiIcon className="w-4 h-4" />
+                        <span>{dt["name"]} - {dt["reqType"].toUpperCase()}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-green-400">
+                        No Tests Performed
+                        </Badge>
+                        <p className="text-muted-foreground">{dt['description']}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-muted-foreground">https://localhost:5000/{dt["path"]}</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-muted-foreground">No Tests Conducted Yet</p>
+                    </TableCell>
+                    <TableCell>
+                      <a href={`/${dt['id']}`} className="px-2">View</a>
+                      <a href={`/configure/${dt['id']}`}>Configure</a>
+                    </TableCell>
+                  </TableRow>);// Skip this entry if 'testResults' is empty or not an array
               }
                const finStat = stat[stat.length - 1]['status'].toUpperCase()
                console.log(finStat)

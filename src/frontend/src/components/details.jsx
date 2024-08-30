@@ -27,20 +27,15 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
 
+function createMarkup(c) {
+  return { __html: c };
+}
+
 export function Details({data}) {
 
   if(!data){
     return ("No endpoint exists")
   }
-
-  const stat = JSON.parse(data['testResults'])
-  console.log(stat[stat.length - 1])
-  const finStat = stat[stat.length - 1]['status'].toUpperCase()
-  console.log(finStat)
-  const time = stat[stat.length - 1]['created_time']
-  var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-  d.setUTCSeconds(parseInt(time));
-
   let responses = data['responses']
 
   let job = JSON.parse(responses)
@@ -56,6 +51,85 @@ export function Details({data}) {
     jb = JSON.parse(req)
     jb = JSON.stringify(jb, null, 4)
   }
+  let stat
+  try{
+  stat = JSON.parse(data['testResults'])
+  }catch(err){
+    return(<div className="flex flex-col min-h-screen bg-muted/40">
+      <header className="bg-background border-b px-4 sm:px-6 flex items-center h-16">
+        <div className="flex items-center gap-2">
+          <GarudaIcon className="w-6 h-6" />
+          <h1 className="text-lg font-semibold"><a href="/">Garuda</a></h1>
+        </div>
+        <p className="ml-4 text-muted-foreground text-sm">Manage and monitor all your API endpoints.</p>
+      </header>
+      <main className="flex-1 grid gap-8 p-4 sm:p-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>API Details</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <div>
+              <h3 className="text-lg font-medium">Endpoint</h3>
+              <p className="text-muted-foreground">http://localhost:5000{data['path']}</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium">Current Status</h3>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-green-400">
+                  No Tests Performed
+                </Badge>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium">Description</h3>
+              <div className="flex items-center gap-2">
+                {data['description']}
+                  {/* <div dangerouslySetInnerHTML={createMarkup(data['description'])}></div> */}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium">Request Model - {data['reqType'].toUpperCase()}</h3>
+              <pre className="bg-background p-4 rounded-md text-sm">{jb != "null" ? jb : "Not availale!"}</pre>
+            </div>
+            <div>
+              <h3 className="text-lg font-medium">Response Model</h3>
+              <pre className="bg-background p-4 rounded-md text-sm text-wrap">{
+                job}</pre>
+            </div>
+            
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Vulnerability Testing History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Vulnerabilities</TableHead>
+                  <TableHead>Risk</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Solution</TableHead>
+                </TableRow>
+              </TableHeader>
+              
+            </Table>
+          </CardContent>
+        </Card>
+      </main>
+    </div>)
+  }
+  console.log(stat[stat.length - 1])
+  const finStat = stat[stat.length - 1]['status'].toUpperCase()
+  console.log(finStat)
+  const time = stat[stat.length - 1]['created_time']
+  var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+  d.setUTCSeconds(parseInt(time));
+
+  
   
   let results = JSON.parse(data['testResults'])
 
@@ -89,7 +163,8 @@ export function Details({data}) {
             <div>
               <h3 className="text-lg font-medium">Description</h3>
               <div className="flex items-center gap-2">
-                  <div dangerouslySetInnerHTML={createMarkup(data['description'])}></div>
+                {data['description']}
+                  {/* <div dangerouslySetInnerHTML={createMarkup(data['description'])}></div> */}
               </div>
             </div>
             <div>
@@ -115,8 +190,8 @@ export function Details({data}) {
                   <TableHead>Date</TableHead>
                   <TableHead>Vulnerabilities</TableHead>
                   <TableHead>Risk</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead>Solution</TableHead>
+                  <TableHead>Raise Ticket/Issue</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -126,22 +201,33 @@ export function Details({data}) {
                     console.log(res)
                     return(
                       <TableRow>
-                        <TableCell>{d.toISOString().substring(0, 10)}</TableCell>
+                        <TableCell>{d.toISOString().substring(0, 10) + " " + d.toLocaleTimeString()}</TableCell>
                         <TableCell>
                           <ul className="space-y-1">
                             <li>{res['status'] == "ok"? "No Vulnerabilities detected": res['alert']}</li>
                           </ul>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="bg-yellow-400">
-                          {res['status'].toUpperCase()}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
+                          {/* <Badge variant="outline" className="bg-yellow-400"> */}
                           {res['riskdesc']}
+                          {/* </Badge> */}
+                        </TableCell>
+
+                        <TableCell>
+                          {res['solution']}
+                        {/* <div dangerouslySetInnerHTML={createMarkup(res['solution'])}></div> */}
                         </TableCell>
                         <TableCell>
-                        <div dangerouslySetInnerHTML={createMarkup(res['solution'])}></div>
+                          {res['status'] != 'ok'?(
+                          <a href="">
+                          <Badge variant="outline" className="bg-yellow-400 w-10 h-10 m-2">
+                             <img src="https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png" width="250%"/>
+                          </Badge>
+                          <Badge variant="outline" className="bg-yellow-400 w-10 h-10 m-2">
+                             <img src="https://static-00.iconduck.com/assets.00/jira-icon-2048x2048-nufjgz6n.png" width="150%"/>
+                          </Badge>
+                          </a>):(<div></div>)
+                          }
                         </TableCell>
                       </TableRow>
                     )
@@ -157,9 +243,7 @@ export function Details({data}) {
   );
 }
 
-function createMarkup(c) {
-  return { __html: c };
-}
+
 
 
 function PiIcon(props) {

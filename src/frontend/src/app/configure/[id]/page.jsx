@@ -1,4 +1,4 @@
-export default Configure = () => {
+export default function Configure(){
     return (
         "Comming Soon!"
     )
