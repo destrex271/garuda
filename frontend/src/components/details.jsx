@@ -133,6 +133,8 @@ export function Details({data}) {
   
   let results = JSON.parse(data['testResults'])
 
+  
+
   return (
     (<div className="flex flex-col min-h-screen bg-muted/40">
       <header className="bg-background border-b px-4 sm:px-6 flex items-center h-16">
@@ -192,6 +194,7 @@ export function Details({data}) {
                   <TableHead>Risk</TableHead>
                   <TableHead>Solution</TableHead>
                   <TableHead>Raise Ticket/Issue</TableHead>
+                  <TableHead>Download Report</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -226,6 +229,15 @@ export function Details({data}) {
                           <Badge variant="outline" className="bg-yellow-400 w-10 h-10 m-2">
                              <img src="https://static-00.iconduck.com/assets.00/jira-icon-2048x2048-nufjgz6n.png" width="150%"/>
                           </Badge>
+                          </a>):(<div></div>)
+                          }
+                        </TableCell>
+                        <TableCell>
+                          {res['status'] != 'ok'?(
+                          <a href="">
+                          <button variant="outline" className="bg-yellow-400 w-10 h-10 m-2">
+                             <img src="https://png.pngtree.com/element_our/20190601/ourmid/pngtree-file-download-icon-image_1344466.jpg" width="250%"/>
+                          </button>
                           </a>):(<div></div>)
                           }
                         </TableCell>
