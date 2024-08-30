@@ -130,11 +130,17 @@ func PopulateTestResultsSingleScan(alerts_map map[string]interface{}, endpoints 
 
 	// log.Fatal(alerts)
 
+	risk_ctr := 0
+
 	for _, alert := range alerts {
 		alert_dt, _ := alert.(map[string]interface{})
 		riskcode, _ := alert_dt["riskcode"].(string)
 		if riskcode == "0" {
-			continue
+			if risk_ctr > 1 {
+				continue
+			} else {
+				risk_ctr++
+			}
 		}
 		alert_obj := Alert{
 			Name:        alert_dt["alert"].(string),

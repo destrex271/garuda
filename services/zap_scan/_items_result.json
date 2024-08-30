@@ -1,5 +1,5 @@
 {
-	"@generated": "Fri, 30 Aug 2024 13:57:33",
+	"@generated": "Fri, 30 Aug 2024 16:51:58",
 	"@programName": "ZAP",
 	"@version": "2.15.0",
 	"site": [
@@ -41,17 +41,76 @@
 					"riskcode": "2",
 					"riskdesc": "Medium (High)",
 					"solution": "\u003cp\u003eEnsure that your web server, application server, load balancer, etc. is properly configured to set the Content-Security-Policy header.\u003c/p\u003e",
-					"sourceid": "5",
+					"sourceid": "32",
+					"wascid": "15"
+				},
+				{
+					"alert": "Content Security Policy (CSP) Header Not Set",
+					"alertRef": "10038-1",
+					"confidence": "3",
+					"count": "4",
+					"cweid": "693",
+					"desc": "\u003cp\u003eContent Security Policy (CSP) is an added layer of security that helps to detect and mitigate certain types of attacks, including Cross Site Scripting (XSS) and data injection attacks. These attacks are used for everything from data theft to site defacement or distribution of malware. CSP provides a set of standard HTTP headers that allow website owners to declare approved sources of content that browsers should be allowed to load on that page — covered types are JavaScript, CSS, HTML frames, fonts, images and embeddable objects such as Java applets, ActiveX, audio and video files.\u003c/p\u003e",
+					"instances": [
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "DELETE",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:16000/items/id"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:16000/items/id"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "POST",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:16000/items"
+						},
+						{
+							"attack": "",
+							"evidence": "",
+							"method": "PUT",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:16000/items/id"
+						}
+					],
+					"name": "Content Security Policy (CSP) Header Not Set",
+					"otherinfo": "",
+					"pluginid": "10038",
+					"reference": "\u003cp\u003ehttps://developer.mozilla.org/en-US/docs/Web/Security/CSP/Introducing_Content_Security_Policy\u003c/p\u003e\u003cp\u003ehttps://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html\u003c/p\u003e\u003cp\u003ehttps://www.w3.org/TR/CSP/\u003c/p\u003e\u003cp\u003ehttps://w3c.github.io/webappsec-csp/\u003c/p\u003e\u003cp\u003ehttps://web.dev/articles/csp\u003c/p\u003e\u003cp\u003ehttps://caniuse.com/#feat=contentsecuritypolicy\u003c/p\u003e\u003cp\u003ehttps://content-security-policy.com/\u003c/p\u003e",
+					"riskcode": "2",
+					"riskdesc": "Medium (High)",
+					"solution": "\u003cp\u003eEnsure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header.\u003c/p\u003e",
+					"sourceid": "25",
 					"wascid": "15"
 				},
 				{
 					"alert": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)",
 					"alertRef": "10037",
 					"confidence": "2",
-					"count": "4",
+					"count": "8",
 					"cweid": "200",
 					"desc": "\u003cp\u003eThe web/application server is leaking information via one or more \"X-Powered-By\" HTTP response headers. Access to such information may facilitate attackers identifying other frameworks/components your web application is reliant upon and the vulnerabilities such components may be subject to.\u003c/p\u003e",
 					"instances": [
+						{
+							"attack": "",
+							"evidence": "X-Powered-By: Express",
+							"method": "DELETE",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:16000/items/id"
+						},
 						{
 							"attack": "",
 							"evidence": "X-Powered-By: Express",
@@ -74,6 +133,14 @@
 							"method": "GET",
 							"otherinfo": "",
 							"param": "",
+							"uri": "http://localhost:16000/items/id"
+						},
+						{
+							"attack": "",
+							"evidence": "X-Powered-By: Express",
+							"method": "GET",
+							"otherinfo": "",
+							"param": "",
 							"uri": "http://localhost:16000/robots.txt"
 						},
 						{
@@ -83,6 +150,22 @@
 							"otherinfo": "",
 							"param": "",
 							"uri": "http://localhost:16000/sitemap.xml"
+						},
+						{
+							"attack": "",
+							"evidence": "X-Powered-By: Express",
+							"method": "POST",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:16000/items"
+						},
+						{
+							"attack": "",
+							"evidence": "X-Powered-By: Express",
+							"method": "PUT",
+							"otherinfo": "",
+							"param": "",
+							"uri": "http://localhost:16000/items/id"
 						}
 					],
 					"name": "Server Leaks Information via \"X-Powered-By\" HTTP Response Header Field(s)",
@@ -92,7 +175,7 @@
 					"riskcode": "1",
 					"riskdesc": "Low (Medium)",
 					"solution": "\u003cp\u003eEnsure that your web server, application server, load balancer, etc. is configured to suppress \"X-Powered-By\" headers.\u003c/p\u003e",
-					"sourceid": "195",
+					"sourceid": "25",
 					"wascid": "13"
 				},
 				{
@@ -127,7 +210,7 @@
 					"riskcode": "1",
 					"riskdesc": "Low (Medium)",
 					"solution": "\u003cp\u003eEnsure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to 'nosniff' for all web pages.\u003c/p\u003e\u003cp\u003eIf possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.\u003c/p\u003e",
-					"sourceid": "195",
+					"sourceid": "30",
 					"wascid": "15"
 				},
 				{
@@ -242,7 +325,7 @@
 					"riskcode": "0",
 					"riskdesc": "Informational (Medium)",
 					"solution": "",
-					"sourceid": "279",
+					"sourceid": "122",
 					"wascid": "0"
 				}
 			]

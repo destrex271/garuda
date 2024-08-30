@@ -31,7 +31,7 @@ var client zap.Interface
 var cfg *zap.Config
 
 func init() {
-	flag.StringVar(&target, "target", "http://localhost:16000/apidocs", "target address")
+	// flag.StringVar(&target, "target", "http://localhost:16000/apidocs", "target address")
 	flag.StringVar(&apidocs, "apidocs", "/home/akshat/fg/dummyapi2/", "target address")
 	flag.StringVar(&baseURL, "baseurl", "http://localhost:16000", "targ")
 	flag.StringVar(&appName, "appname", "REST API", "targ")
@@ -183,7 +183,7 @@ func ActiveZapScanSingle(url string, nm string) (map[string]interface{}, error) 
 		log.Fatal(err)
 	}
 
-	// log.Println(resp)
+	log.Println(resp)
 
 	scanID := resp["scan"].(string)
 
