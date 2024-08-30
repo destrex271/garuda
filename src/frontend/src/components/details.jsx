@@ -50,7 +50,7 @@ export function Details({data}) {
 
   let req = data['requestBody']
   let jb = ""
-  if(req == undefined){
+  if(req == undefined || req.length == 0){
     jb = "No req body required"
   }else{
     jb = JSON.parse(req)
@@ -89,12 +89,12 @@ export function Details({data}) {
             <div>
               <h3 className="text-lg font-medium">Description</h3>
               <div className="flex items-center gap-2">
-                  <p>{data['description']}</p>
+                  <div dangerouslySetInnerHTML={createMarkup(data['description'])}></div>
               </div>
             </div>
             <div>
               <h3 className="text-lg font-medium">Request Model - {data['reqType'].toUpperCase()}</h3>
-              <pre className="bg-background p-4 rounded-md text-sm">{jb}</pre>
+              <pre className="bg-background p-4 rounded-md text-sm">{jb != "null" ? jb : "Not availale!"}</pre>
             </div>
             <div>
               <h3 className="text-lg font-medium">Response Model</h3>
@@ -114,7 +114,9 @@ export function Details({data}) {
                 <TableRow>
                   <TableHead>Date</TableHead>
                   <TableHead>Vulnerabilities</TableHead>
+                  <TableHead>Risk</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Solution</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -127,60 +129,24 @@ export function Details({data}) {
                         <TableCell>{d.toISOString().substring(0, 10)}</TableCell>
                         <TableCell>
                           <ul className="space-y-1">
-                            <li>{res['status'] == "ok"? "No Vulnerabilities detected": res['status']}</li>
+                            <li>{res['status'] == "ok"? "No Vulnerabilities detected": res['alert']}</li>
                           </ul>
                         </TableCell>
                         <TableCell>
-                        <Badge variant="outline" className="bg-yellow-400">
+                          <Badge variant="outline" className="bg-yellow-400">
                           {res['status'].toUpperCase()}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {res['riskdesc']}
+                        </TableCell>
+                        <TableCell>
+                        <div dangerouslySetInnerHTML={createMarkup(res['solution'])}></div>
                         </TableCell>
                       </TableRow>
                     )
                   })
                 }
-
-<TableRow>
-                  <TableCell>2023-04-15</TableCell>
-                  <TableCell>
-                    <ul className="space-y-1">
-                      <li>Cross-Site Scripting (XSS)</li>
-                      <li>SQL Injection</li>
-                    </ul>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-yellow-400">
-                      In Progress
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>2023-02-28</TableCell>
-                  <TableCell>
-                    <ul className="space-y-1">
-                      <li>Broken Authentication</li>
-                    </ul>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="bg-green-400">
-                      Resolved
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>2022-11-10</TableCell>
-                  <TableCell>
-                    <ul className="space-y-1">
-                      <li>Sensitive Data Exposure</li>
-                      <li>Insecure Direct Object References</li>
-                    </ul>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-red-400">
-                      Unresolved
-                    </Badge>
-                  </TableCell>
-                </TableRow>
 
               </TableBody>
             </Table>
@@ -190,6 +156,11 @@ export function Details({data}) {
     </div>)
   );
 }
+
+function createMarkup(c) {
+  return { __html: c };
+}
+
 
 function PiIcon(props) {
   return (

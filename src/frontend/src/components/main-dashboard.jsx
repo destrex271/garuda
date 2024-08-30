@@ -48,10 +48,20 @@ export function MainDashboard({data}) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((dt) => {
-              console.log
-               const stat = JSON.parse(dt['testResults'])
-               console.log(stat[stat.length - 1])
+            {data.map((dt, id) => {
+              let stat = [];
+              try {
+                  stat = JSON.parse(dt['testResults']);
+              } catch (e) {
+                  console.error("Failed to parse 'testResults' for entry:", dt);
+                  return; // Skip this entry if parsing fails
+              }
+          
+              // Check if 'stat' is an array and has elements
+              if (!Array.isArray(stat) || stat.length === 0) {
+                  console.log("Skipping empty or invalid 'testResults' for entry:", dt);
+                  return; // Skip this entry if 'testResults' is empty or not an array
+              }
                const finStat = stat[stat.length - 1]['status'].toUpperCase()
                console.log(finStat)
                const time = stat[stat.length - 1]['created_time']
